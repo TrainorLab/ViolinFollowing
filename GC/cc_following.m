@@ -1,14 +1,19 @@
 %% Musical following study - Cross-correlation script
-% Lucas Klein - June 2020
+% Lucas Klein
+% Updated: April 2022
+
+clc
+cd '~/Desktop/Following/ANALYSIS/GC';
+addpath(genpath('~/Desktop/Following/ANALYSIS/'));
 
 % ~~~ CHANGE THESE ~~~
 % Carry in variables from preprocessing script, or change them?
-carry_over = 1; % 1 for yes, 0 for no
+carry_over = 0; % 1 for yes, 0 for no
 save_flag = 0;
 
-if carry_over == 0
+if carry_over == 0 % if we don't carry over, say which piece we're analyzing here
     piece = 'Danny Boy'; % Which piece are we analyzing?
-    section = '22_1'; % What section?
+    section = 'whole'; % What section?
     ds_targets = [8]; % [4, 5, 6, 7, 8, 9, 10, 12];
     
     %% LOAD in matrix X
@@ -16,9 +21,9 @@ if carry_over == 0
 end
 
 clc
-cd '~/Desktop/Following/ANALYSIS';
-addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
-addpath(genpath('~/Documents/MATLAB/Following/ANALYSIS/2GC/CC_analysis'));
+cd '~/Desktop/Following/ANALYSIS/GC';
+addpath(genpath('~/Desktop/Following/ANALYSIS/'));
+
 
 %% SETUP
 C = {}; % Empty array
