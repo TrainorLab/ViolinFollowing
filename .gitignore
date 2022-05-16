@@ -3,3 +3,9 @@ GC/.DS_Store
 GC/CC_analysis/.DS_Store
 .Rproj.user
 .Rhistory
+Stats/History/
+Stats/Images/
+.ipynb_checkpoints/
+*.csv
+*.rda
+*.Rproj

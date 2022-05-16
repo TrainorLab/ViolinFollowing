@@ -11,8 +11,8 @@
 clear variables
 
 % ~~~ CHANGE THESE ~~~
-piece = 'Danny Boy'; % Danny Boy or In The Garden (don't forget forward slash)
-section = 'whole'; % Enter 
+piece = 'In The Garden'; % Danny Boy or In The Garden
+section = 'whole'; % Enter   
 
 
 %% FIND DATA

@@ -3,57 +3,12 @@
 # Last updated: Jan. 2021
 
 
-# LOAD DATA (from the previously created .rda file)
-load(paste("following_",piece,"_",section,".rda",sep=''))
-load(paste("reshape_following_",piece,"_",section,".rda",sep=''))
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-### STATS
-
-#class(f_filt$Participant)
-
-# Descriptives
-avgdat1 <- tapply(rf_filt$GC, rf_filt$Direction, summary)
-avgdat1
-
-# Calculate standard error of these means:
-avgdat2 <- avgdat1 %>%
-  group_by(Direction) %>%
-  mutate(SE = SD / sqrt(N))
-avgdat2
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-## T-TESTS
-# Look at difference in GC values for different directions
-
-t.test(f_filt$GC_r2p,f_filt$GC_p2r,paired=T,alternative="two.sided")
-# Or...
-t.test(rf_filt$GC[rf_filt$Direction == "Recording to Performance"],
-       rf_filt$GC[rf_filt$Direction == "Performance to Recording"],
-       paired=T,alternative="two.sided")
-#cohensD(following$GC_r2p[following$Downsample == "8"],following$GC_p2r[following$Downsample == "6"])
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-## CORRELATIONS - using following
-cor.test(f_filt$GC_p2r,f_filt$GC_r2p, method="pearson", exact=FALSE)
-# non-significant
-cor.test(f_filt$CC,f_filt$GC_r2p, method="pearson", exact=FALSE)
-# non-significant
-
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # TREND ANALYSIS - calculation of linear contrasts (comparisons) among levels of a quantitative factor
+
+
 
 # Set global options
 options(contrasts = c("contr.sum","contr.poly"))
@@ -61,15 +16,14 @@ options(digits = 8) # formats the output (8 trials?)
 
 # The Omnibus Test:
 # Create a new variable called trialInt that has Trial as an integer
-f_filt$trialInt <- as.integer(f_filt$Trial, labels = "t", ordered = FALSE) # create a Trial factor
-class(f_filt$trialInt)
+x$trialInt <- as.integer(x$Trial, labels = "t", ordered = FALSE) # create a Trial factor
+class(x$trialInt)
 
 y.means.gc <- tapply(f_filt$GC_r2p, f_filt$trialInt, mean) # granger
 y.means.cc <- tapply(f_filt$CC, f_filt$trialInt, mean) # cross-correlation
 x.group <- as.numeric(sort(unique(f_filt$Trial)))
 
-# Correlation between age and the mean (just for fun)
-cor(x.group, y.means.gc) # correlation is quite high (-0.878), there is probabaly an association
+cor(x.group, y.means.gc) # correlation is quite high (-0.878), there is probably an association
 cor(x.group, y.means.cc) # .45 (not much)
 plot(x.group, y.means.gc)
 plot(x.group, y.means.cc)
@@ -77,12 +31,12 @@ plot(x.group, y.means.cc)
 # ------------------------------------
 
 # Now do an ANOVA
-f_filt.aov.gc <- aov(GC_r2p ~ Trial, data = folkplayers)
-f_filt.aov.cc <- aov(CC ~ Trial, data = f_filt)
+f_filt.aov.gc <- aov(GC_r2p ~ Trial, data = x)
+f_filt.aov.cc <- aov(CC ~ Trial, data = x)
 summary(f_filt.aov.gc)
 summary(f_filt.aov.cc)
 # ...or same results done a different way
-f_filt.lm <- lm(GC_r2p ~ Trial, data = f_filt)
+f_filt.lm <- lm(GC_r2p ~ Trial, data = x)
 summary(f_filt.lm)
 anova(f_filt.lm)
 # Why is this insignificant? The omnibus F-test evaluates whether there are ANY

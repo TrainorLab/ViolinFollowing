@@ -6,28 +6,18 @@
 
 % Importantly, the data should already have been preprocessed using the
 % MASTER_preprocess script
-% If you want to plot everything, set plotting_flag = 1. If not, set to 0.
+% To plot everything, set plotting_flag = 1
+% To save the ouput to a .csv file, set save_flag = 1
+
+addpath(genpath('~/Desktop/Following/ANALYSIS/GC'));
+addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 
 
 %% READ IN DATA
-% Did you just run the MASTER_preprocess_following.m script?
-carryover = "Yes"; % ~~~ CHANGE THIS ~~~
-if carryover == "No"
-    clear variables
-    piece = 'Danny Boy'; % Which piece are we analyzing?
-    section = 'whole'; % What section?
-    
-    load(['D_',piece,'_',section,'.mat']); % This loads a cell array called 'D',
-    % which contains a cell for each participant
 
-    % How many downsampling rates are being checked?
-    ds_targets = [8];
-    % NOTE: This list needs to be the same as in the MASTER_preprocessing script
-    % Set it here, or take the variable in from workspace
-    % In ANALYSIS folder, outputs (D.mat and following_gc.csv) are both
-    % appended with a number that corresponds to the LAST downsampling rate
-    % used (e.g. following_gc_15.csv)
-end
+% Did you just run the MASTER_preprocess_following.m script?
+carry_over = 0; % 0 for no, 1 for yes
+which_piece = 2; % Which piece are we analyzing?
 
 % Save and plot data?
 save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
@@ -35,15 +25,33 @@ save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, s
 plotting_flag = 0;
 
 
-
 %% FIND DATA
-data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
-%cd '~/Desktop/Following/ANALYSIS/'
-cd(data_folder)
-addpath(genpath(data_folder))
-addpath(genpath('~/Desktop/Following/ANALYSIS/2GC'));
-addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
+switch carry_over
+    case 0
 
+        if which_piece == 1
+            piece = 'Danny Boy';
+        else
+            piece = 'In The Garden';
+        end
+
+        section = 'whole';
+        
+        load(['D_',piece,'_',section,'.mat']); % This loads a cell array called 'D',
+        % which contains a cell for each participant
+    
+        % How many downsampling rates are being checked?
+        ds_targets = [8];
+    % NOTE: This list needs to be the same as in the MASTER_preprocessing script
+    % Set it here, or take the variable in from workspace
+    % In ANALYSIS folder, outputs (D.mat and following_gc.csv) are both
+    % appended with a number that corresponds to the LAST downsampling rate
+    % used (e.g. following_gc_15.csv)
+end
+
+data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
+cd(data_folder)
+addpath(data_folder)
 
 
 %% Parameters
@@ -72,9 +80,9 @@ for participanti = 1:numel(D)
     for ds_target = ds_targets
         label = ['M_' + string(ds_target)];
         X = D{participanti}.(label);
-        ntrials   = size(X,3);      % number of trials
-        nobs      = size(X,2);      % number of observations per trial
         nvars     = size(X,1);      % number of variables (2)
+        nobs      = size(X,2);      % number of observations per trial
+        ntrials   = size(X,3);      % number of trials (8)
         
         %% Model order estimation
         % Preallocate some vectors
@@ -197,10 +205,10 @@ end
 % Violin
 % For each participant, loop through all 
 if save_flag == 1
+    
+    save([data_folder,'D_',piece,'_',section,'_gc'],'D')
 
-% Make two vectors of GC values: one for recording --> violin, one for
-% violin --> recording
-    %GC_data = zeros(16*length(ds_targets),5);
+    % Make two vectors of GC values: one for rec --> perf, one for perf --> rec
     GC_r2p = [];
     GC_p2r = [];
     for parti = 1:numel(D)
@@ -229,7 +237,7 @@ if save_flag == 1
     trial = repmat([1:ntrials]',numel(D)*length(ds_targets),1);
     
     % Run cc_following.m to calculate CC values
-    cc_following
+    wcc_following
     CC = corvals_reconfig;
     
     %% SAVE
@@ -238,8 +246,14 @@ if save_flag == 1
     T = table(participant, trial, GC_r2p, GC_p2r, CC); % without downsample column
     %T.Properties.VariableNames = {'Participant','Downsample','Trial','GC_r2p','GC_p2r'};
     T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC'}; % without downsample column
-    xlsxname = ['~/Desktop/Following/ANALYSIS/3R/following_',piece,'_',section,'.csv'];
+    xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'.csv'];
     writetable(T,xlsxname);
+end
+
+
+model_orders = zeros(size(numel(D)));
+for mo = 1:numel(D)
+    model_orders(mo) = D{mo}.M_8_morder;
 end
 
 

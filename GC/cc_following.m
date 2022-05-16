@@ -43,7 +43,9 @@ for participanti = 1:numel(D) % Loop through all participants
             
             % CROSS-CORRELATION
             ds_label = ['cc_' + string(ds_target)];
-            C{participanti}.(ds_label)(1,triali) = max(abs(corrgram(X(1,:,triali),X(2,:,triali), maxlag, window, overlap)),[],'all');
+            A = X(1,:,triali);
+            B = X(2,:,triali);
+            C{participanti}.(ds_label)(1,triali) = max(abs(corrgram(A,B,maxlag,window,overlap)),[],'all');
             
             % Let's try Dobri's method...
             sr = 8;
