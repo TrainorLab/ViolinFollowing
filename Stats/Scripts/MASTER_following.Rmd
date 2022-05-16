@@ -83,8 +83,8 @@ following1$Participant <- factor(following1$Participant, ordered = FALSE)
 following2$Trial <- factor(following2$Trial, ordered = TRUE)
 following2$Participant <- factor(following2$Participant, ordered = FALSE)
 
-source("Scripts/prep.R")
-dfs <- prep(following1, following2) # list of 3 items: lf1, lf2, lf_comb
+source("Scripts/prep_following.R")
+dfs <- prep_following(following1, following2) # list of 3 items: lf1, lf2, lf_comb
 
 lf1 <- dfs[[1]] # GC values in long format (both directions): piece 1
 lf2 <- dfs[[2]] # " " : piece 2

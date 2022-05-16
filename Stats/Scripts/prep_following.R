@@ -1,4 +1,4 @@
-prep <- function(following1, following2) {
+prep_following <- function(following1, following2) {
   
   # RESHAPE
   # Reshape data for comparison across conditions. This puts all the GC values into ONE column,
