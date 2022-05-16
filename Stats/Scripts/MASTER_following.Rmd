@@ -1,0 +1,468 @@
+---
+title: "Violin following study stats - master"
+author: "Lucas Klein"
+date: "Last updated: `r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats")
+```
+
+
+# Prep and load
+
+```{r load, message=FALSE, results='hide'}
+setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats")
+imageDirectory <- "/Users/lucas/Desktop/Following/ANALYSIS/Stats/Images"
+final_images <- "/Users/lucas/Library/CloudStorage/OneDrive-McMasterUniversity/1_RESEARCH/1_TrainorLab/2_Following/Manuscript/Images/"
+
+# necessary
+library(readr) # for reading in csv files
+library(dplyr); library(plyr)
+library(reshape)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(effects)
+library(utils)
+library(ggplot2)
+library(ggpubr) # for arranging plots
+library(grid)
+
+# possibly not necessary?
+# library(lsr)
+# library(Rmisc)
+# library(psych)
+# library(magrittr)
+```
+
+Two pieces:
+
+```{r echo=TRUE}
+piece1 <- "Danny Boy"
+piece2 <- "In The Garden"
+section <- "whole" # Which section?
+```
+
+```{r}
+# Import in wide format, with CC values
+filename1 <- paste("following_",piece1,"_",section,".csv",sep='')
+filename2 <- paste("following_",piece2,"_",section,".csv",sep='')
+following1 <- read.csv(filename1, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
+following2 <- read.csv(filename2, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
+#ccorr <- read.csv("ccorr.csv", header = TRUE, na.strings = c("", "NA"))
+#summary(following1)
+#summary(following2)
+#str(following) # make sure all columns are the correct data type
+```
+
+Any NA's?
+
+```{r}
+# Are there any NAs?
+print(colSums(is.na(following1)))
+print(colSums(is.na(following2)))
+```
+### Pre-process
+
+Both dataframes are currently in wide format, with a column for cross-correlation values. This removes the CC column and creates long-formatted dataframes for both pieces, including a combined version of both together. Then outputs these three dataframes in a list.
+
+Recording to performance direction = 1
+
+Performance to recording direction = 2
+
+```{r}
+# Make Trial and Participant factors
+following1$Trial <- factor(following1$Trial, ordered = TRUE)
+following1$Participant <- factor(following1$Participant, ordered = FALSE)
+following2$Trial <- factor(following2$Trial, ordered = TRUE)
+following2$Participant <- factor(following2$Participant, ordered = FALSE)
+
+source("Scripts/prep.R")
+dfs <- prep(following1, following2) # list of 3 items: lf1, lf2, lf_comb
+
+lf1 <- dfs[[1]] # GC values in long format (both directions): piece 1
+lf2 <- dfs[[2]] # " " : piece 2
+cc1 <- dfs[[3]] # CC values, piece 1
+cc2 <- dfs[[4]] # CC values, piece 2
+
+# In these data frames, another column has been added for Piece (1 or 2) and data from both pieces concatenated
+lf_comb <- dfs[[5]] # GC values in long format for both pieces
+cc_comb <-  dfs[[6]] # CC values for both pieces
+
+num_participants <- length(unique(lf_comb$Participant)) # 8
+```
+
+
+Now separate by playing experience: folk players vs. non-folk players.
+
+```{r}
+# SEPARATING BY PLAYING EXPERIENCE
+
+# if(piece == "Danny Boy") {
+#   folk <- filter(lf, Participant %in% c(4,5,8))
+#   nonfolk <- filter(lf, Participant %in% c(1,2,3,6,7))
+#   ear <- filter(lf, Participant %in% c(2,3,4,5,8))
+#   nonear <- filter(lf, Participant %in% c(1,6,7))
+# } else {
+#   players <- filter(lf, Participant %in% c(3,4,5,6))
+#   nonfolk <- filter(lf, Participant %in% c(1,2,7,8))
+#   ear <- filter(lf, Participant %in% c(1,2,3,4,5,6))
+#   nonear <- filter(lf, Participant %in% c(7,8))
+# }
+```
+
+
+
+# Plots
+
+Set title based on piece and section
+
+```{r}
+# If analyzing one piece at a time:
+piece <- "Danny Boy"
+
+# Title for whole piece
+if(piece == "Danny Boy" && section == "whole") {
+  plot_title <- "Piece 1: Danny Boy"
+} else {
+  plot_title <- "Piece 2: In The Garden"
+}
+
+# Auto
+#plot_title1 <- paste(piece," - ","section ",section,sep = '')
+#plot_title <- paste("Section ",section,sep = '')
+# Manual
+#plot_title <- "In The Garden - 'by ear' players"
+
+```
+
+
+## Violin plots for average GC values by direction
+
+```{r violin, fig.height=7, fig.width=9}
+source("Scripts/plots_following.R")
+source("Scripts/multiplot.R")
+plots <- plots_following(dfs)
+
+violin_all <- ggarrange(plots[[7]], plots[[8]],
+          common.legend = TRUE,
+          legend = "bottom",
+          labels = c('A','B'))
+violin_all
+
+ggsave(paste(final_images,"violin_all.png", sep=''), violin_all)
+```
+
+Figure \ref{fig:violin} shows.....
+
+## All plots
+
+```{r allplots, fig.height=9, fig.width=7}
+plot_names <- c('1' = "Danny Boy",
+                '2' = "In The Garden")
+
+GC_combined <- plots[[5]] + facet_wrap(~Piece, labeller = as_labeller(plot_names)) #"label_both")
+CC_combined <- plots[[6]] + facet_wrap(~Piece, labeller = as_labeller(plot_names))
+
+plots_all <- ggarrange(GC_combined, CC_combined, ncol = 1,
+                       labels = c('A','B'))
+#  theme(legend.position = "none")
+plots_all
+
+#mplot <- multiplot(plotlist=plots,layout=matrix(c(1,2),nrow=1,byrow=TRUE))
+
+ggsave(paste(final_images,"plots_all.png",sep=''),plots_all)
+```
+
+Figure \ref{fig:allplots} shows
+
+
+# Stats
+
+## Information flow direction
+
+### T-tests
+
+```{r}
+# T-test between directions
+# Recording to performance = 1, performance to recording = 2
+
+t.test_piece1 <- t.test(
+  filter(lf1,Direction=="Recording to Performance")$GC,
+  filter(lf1,Direction=="Performance to Recording")$GC,
+  paired = T,
+  alternative = "two.sided")
+t.test_piece1
+
+t.test_piece2 <- t.test(
+  filter(lf2,Direction=="Recording to Performance")$GC,
+  filter(lf2,Direction=="Performance to Recording")$GC,
+  paired = T,
+  alternative = "two.sided")
+t.test_piece2
+```
+
+Changes in Information Flow 
+
+### Linear mixed effects mdodels
+- lmer() function
+- Automatically uses Type III SS
+
+
+```{r}
+# Prep
+source("Scripts/lmer_following.R")
+#lf1$Trial <- as.integer(lf1$Trial)
+#lf2$Trial <- as.integer(lf2$Trial)
+#lf_comb$Trial <- as.integer(lf_comb$Trial)
+#cc_comb$Trial <- as.integer(cc_comb$Trial)
+
+lf1_r2p <- subset(lf1, Direction == "Recording to Performance")
+lf2_r2p <- subset(lf2, Direction == "Recording to Performance")
+lf_comb_r2p <- subset(lf_comb, Direction == "Recording to Performance")
+
+# Each output from lmer_following is a LIST of models
+# ~~~~~ GRANGER CAUSALITY ~~~~~
+mod.gc1 <- lmer_following(lf1_r2p) # Danny Boy
+mod.gc2 <- lmer_following(lf2_r2p) # In The Garden
+mod.gcc <- lmer_following(lf_comb_r2p) # both
+
+# ~~~~~ CROSS-CORRELATION ~~~~~
+mod.cc1 <- lmer_following(cc1)
+mod.cc2 <- lmer_following(cc2)
+mod.ccc <- lmer_following(cc_comb)
+```
+
+### Granger causality models
+
+anova(m1,m2,m3,m4,m5,m6)
+# model 3 is the best one, so let's get the effect sizes of its two fixed effects
+
+chi swuared - compares error 
+
+converts t-value and df to 
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~
+Jesse's:
+
+model = glmer(primacy ~ 1 + modality * list_length * pres_rate + (1|subject), data=e1_data,
+              family='binomial', control=glmerControl(optimizer = "bobyqa"))
+Anova(model, type=3)
+
+```{r}
+library(effectsize)
+library(r2glmm)
+
+# ~~~~~ Each piece separately ~~~~~
+print(anova(mod.gc1[[1]], mod.gc1[[2]])) # DB
+anova(mod.gc1[[2]])
+mod.gc1[[2]]
+summary(mod.gc1[[2]])
+
+print(anova(mod.gc2[[1]], mod.gc2[[2]])) # ITG
+anova(mod.gc2[[2]])
+mod.gc2[[2]]
+
+
+# Dobri's method:
+# First, run anova on all models to find the best one
+## Anova finds differences in variance explained by each model compared to the model that is slightly less comple. So it compares models in order of complexity (# of terms)
+
+mod <- mod.cc1[[2]] # change this
+parameters::model_parameters(mod, effects = "fixed", ci_method = "satterthwaite")
+t <- parameters::model_parameters(mod, effects = "fixed", ci_method = "satterthwaite")[7][[1]]
+dfs <- parameters::model_parameters(mod, effects = "fixed", ci_method = "satterthwaite")[8][[1]]
+t_to_omega2(t[1],df=dfs[1])
+t_to_omega2(t[2],df=dfs[2])
+
+# To find R^2 values:
+r2beta(mod, method = 'kr') # or 'nsj'
+ 
+
+
+# ~~~~~ Pieces combined ~~~~~
+#anova(mod.gcc[[7]])
+#anova(mod.gcc[[6]],mod.gcc[[5]])
+
+#print(anova(mod.gcc[[1]],mod.gcc[[2]],mod.gcc[[3]],mod.gcc[[4]],mod.gcc[[5]],mod.gcc[[6]],mod.gcc[[7]],mod.gcc[[8]]))
+
+#anova(mod.gcc[[3]], mod.gcc[[7]], mod.gcc[[8]])
+#anova(mod.gcc[[7]], mod.gcc[[8]])
+
+#fixef(mod.gcc[[7]])
+#confint(mod.gcc[[7]])
+#ranef(mod.gcc[[7]]) # Trial = -0.001646372
+#anova(mod.gcc[[7]])
+```
+
+r2beta: r2beta Compute R Squared for Mixed Models
+
+
+t-value: slope is significantly NOT zero
+Estimate: slope of model, effect size
+
+What does it mean for fixed effects to be correlated?
+
+
+
+
+
+~~~~~
+
+### Cross-correlation models:
+
+```{r}
+# Each piece separately
+anova(mod.cc1[[1]], mod.cc1[[2]]) # DB
+anova(mod.cc1[[2]])
+mod.cc1[[2]]
+summary(mod.cc1[[2]])
+
+anova(mod.cc2[[1]], mod.cc2[[2]]) # ITG
+#anova(mod.cc2[[2]])
+mod.cc2[[2]]
+summary(mod.cc2[[2]])
+# 
+# print(anova(mod.ccc[[1]], mod.ccc[[2]], mod.ccc[[3]], mod.ccc[[4]], mod.ccc[[5]], mod.ccc[[6]], mod.ccc[[7]], mod.ccc[[8]])) # combined
+
+```
+
+
+
+## Danny Boy
+
+Significant models:
+- mod.gc1[[3]]: Trial and direction fixed, participant random ***
+- mod.gc1[[4]]: Trial by direction interaction fixed, participant random *
+
+
+### ITG
+
+Significant models:
+- mod.gc2[[3]]: Trial by direction interaction fixed, participant random ***
+
+
+
+
+### Combined
+
+Significant models:
+- mod.gcc[[3]]: Trial and direction fixed, participant random (with other piece data included) ***
+
+- mod.gcc[[7]]: Trial and direction fixed, participant and piece random ***
+- mod.gcc[[8]]: Trial by direction interaction fixed, participant and piece random ***
+
+
+
+Best model is: GC ~ 1 + Trial + Piece + (1 | Direction)
+Trial + piece fixed, direction random.
+Chisq = 25.27, Df = 1, p < .001
+
+
+
+~~~~~
+
+## Trend Analysis
+
+Calculating linear contrasts (comparisons) among levels of a quantitative (ordered) factor
+Assumes equal subjects in each group
+
+Trend analysis partitions the sum of squares for the model into portions due to linear trend, quadratic trend, cubic trend, etc. If there are k groups it is possible to look at up to k - 1 trends, although often researchers combine together all trends above quadratic or cubic.
+
+### Trend analysis for GC for both pieces
+
+```{r}
+contr.poly(n = 8, scores = c(1, 2, 3, 4, 5, 6, 7, 8)) # This command automatically sets up orthogonal contrasts
+# These trend contrasts form an orthogonal set
+class(following1$Trial) # make sure Trial is an ordered factor
+unique(following1$Trial) # 8 factors
+
+## Granger
+f1.aov.gc <- aov(GC_r2p ~ Trial, data = following1) # piece 1
+summary(f1.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+
+f2.aov.gc <- aov(GC_r2p ~ Trial, data = following2) # piece 2
+summary(f2.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+
+## Cross-correlation
+f1.aov.cc <- aov(CC ~ Trial, data = following1) # piece 1
+summary(f1.aov.cc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+# not significant 
+
+f2.aov.cc <- aov(CC ~ Trial, data = following2) # piece 2
+summary(f2.aov.cc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+# not significant
+
+summary(f2.aov.cc, split = list(Trial = list(linear=1, quad=2, other=3:4))) # Look specifically for quadratic trend
+coef(f2.aov.cc)
+
+```
+
+
+### Trend analysis for cross-correlation
+
+```{r}
+contr.poly(n = 8, scores = c(1, 2, 3, 4, 5, 6, 7, 8)) # This command automatically sets up orthogonal contrasts
+# These trend contrasts form an orthogonal set
+class(following1$Trial) # make sure Trial is an ordered factor
+unique(following1$Trial) # 8 factors
+
+## Granger
+f1.aov.gc <- aov(GC_r2p ~ Trial, data = following1) # piece 1
+summary(f1.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3,quartic=4)))
+```
+
+## Correlations between GC and CC
+
+```{r}
+# Danny Boy
+with(following1,cor.test(x=GC_r2p, y=CC, method="pearson"))
+with(following1,cor.test(x=GC_r2p, y=CC, method="spearman", exact=F))
+
+cor_mod1 <- lm(GC_r2p ~ CC, data=following1)
+summary(cor_mod1) # same
+
+plot(GC_r2p ~ CC, data=following1, type='p', xlab='CC', ylab='GC')
+abline(cor_mod1)
+
+
+# In The Garden
+with(following2,cor.test(x=GC_r2p, y=CC, method="pearson"))
+with(following2,cor.test(x=GC_r2p, y=CC, method="spearman", exact=F))
+
+cor_mod2 <- lm(GC_r2p ~ CC, data=following2)
+summary(cor_mod2) # same
+
+plot(GC_r2p ~ CC, data=following2, type='p', xlab='CC', ylab='GC')
+abline(cor_mod2)
+
+
+
+
+```
+
+
+
+
+# Save data
+
+Save .rda files 
+
+```{r}
+## SAVE DATA
+save(dfs, file = "following.rda")
+
+#save(following, file=paste("following_",piece,"_",section,".rda",sep=''))
+#save(long_following, file = paste("long_following_",piece,"_",section,".rda",sep=''))
+```
+
+
