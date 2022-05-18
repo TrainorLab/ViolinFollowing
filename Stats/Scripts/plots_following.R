@@ -16,7 +16,7 @@ plots_following <- function(x) {
                axis.title.x = element_text(vjust=1),
                axis.text = element_text(size=10, colour="black"))
 
-  for (g in 1:2){
+  for (g in 1:2){ # Do plotting (and save) for each piece separately
     
     if (g == 1){
       title <- "Piece 1: Danny Boy"}
@@ -25,7 +25,7 @@ plots_following <- function(x) {
 
     # ~~~~~
     
-    p <- x[[g]]
+    p <- x[[g]] # GC data from piece 1 and then piece 2
     gc <- ggplot(data=p, aes(Trial, GC, color = Direction)) +
       #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
       stat_summary(fun = mean, geom = "point", size = 2) +
@@ -39,6 +39,8 @@ plots_following <- function(x) {
       #scale_y_continuous(limits = c(0.00, 0.2)) +
       coord_cartesian(ylim = c(0, 0.11)) +
       thm
+    
+    gc_parts <- gc + facet_wrap(vars(Participant))
     
     vi <- ggplot(data=p, aes(x=Direction, y=GC)) +
       geom_violin(aes(fill=Direction)) + geom_point() +
@@ -54,7 +56,7 @@ plots_following <- function(x) {
     
     # ~~~~~
   
-    q <- x[[g+2]]
+    q <- x[[g+2]] # CC data from piece 1 and then piece 2
     cc <- ggplot(q, aes(x=Trial, y=CC, Group=1)) +
       #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
       stat_summary(fun = mean, geom = "point", color="blue", size=2) +
@@ -70,10 +72,15 @@ plots_following <- function(x) {
       #coord_cartesian(ylim = c(0, 0.11)) +
       thm
     
+    cc_parts <- cc + facet_wrap(vars(Participant))
+    
     plots[[g]] <- gc
     plots[[g+2]] <- cc
     plots[[g+6]] <- vi
-  }
+    plots[[g+8]] <- gc_parts
+    plots[[g+10]] <- cc_parts
+    
+  } # (end of for loop)
   
   # ~~~~~ Pieces combined
   
@@ -107,7 +114,6 @@ plots_following <- function(x) {
     #scale_y_continuous(limits = c(0.00, 0.2)) +
     #coord_cartesian(ylim = c(0, 0.11)) +
     thm
-  
   
   plots[[5]] <- gcs
   plots[[6]] <- ccs

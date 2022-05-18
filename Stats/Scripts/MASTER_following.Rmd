@@ -140,16 +140,17 @@ if(piece == "Danny Boy" && section == "whole") {
 # Manual
 #plot_title <- "In The Garden - 'by ear' players"
 
+# Make plots
+source("Scripts/plots_following.R")
+#source("Scripts/multiplot.R")
+plots <- plots_following(dfs)
+
 ```
 
 
-## Violin plots for average GC values by direction
+## GC values by direction
 
-```{r violin, fig.height=7, fig.width=9}
-source("Scripts/plots_following.R")
-source("Scripts/multiplot.R")
-plots <- plots_following(dfs)
-
+```{r violin, fig.height=5.5, fig.width=8}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
@@ -161,9 +162,10 @@ ggsave(paste(final_images,"violin_all.png", sep=''), violin_all)
 
 Figure \ref{fig:violin} shows.....
 
-## All plots
 
-```{r allplots, fig.height=9, fig.width=7}
+## GC and CC by trial
+
+```{r allplots, fig.height=8, fig.width=7}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
@@ -182,12 +184,19 @@ ggsave(paste(final_images,"plots_all.png",sep=''),plots_all)
 
 Figure \ref{fig:allplots} shows
 
+### GC for individual participants
+
+```{r gc_parts, fig.height=5.5, fig.width=8}
+plots[[9]] # plots of GC values for each participant, Piece 1
+plots[[10]] # plots of GC values for each participant, Piece 2
+```
+
 
 # Stats
 
 ## Information flow direction
 
-### T-tests
+T-tests
 
 ```{r}
 # T-test between directions
@@ -208,11 +217,18 @@ t.test_piece2 <- t.test(
 t.test_piece2
 ```
 
-Changes in Information Flow 
+## Changes in GC and CC across trials
 
 ### Linear mixed effects mdodels
 - lmer() function
 - Automatically uses Type III SS
+
+r2beta: r2beta Compute R Squared for Mixed Models
+t-value: slope is significantly NOT zero
+Estimate: slope of model, effect size
+chi squared - compares error
+
+What does it mean for fixed effects to be correlated?
 
 
 ```{r}
@@ -223,6 +239,7 @@ source("Scripts/lmer_following.R")
 #lf_comb$Trial <- as.integer(lf_comb$Trial)
 #cc_comb$Trial <- as.integer(cc_comb$Trial)
 
+# For lmer modeling, only use recording to performance
 lf1_r2p <- subset(lf1, Direction == "Recording to Performance")
 lf2_r2p <- subset(lf2, Direction == "Recording to Performance")
 lf_comb_r2p <- subset(lf_comb, Direction == "Recording to Performance")
@@ -241,38 +258,38 @@ mod.ccc <- lmer_following(cc_comb)
 
 ### Granger causality models
 
-anova(m1,m2,m3,m4,m5,m6)
-# model 3 is the best one, so let's get the effect sizes of its two fixed effects
-
-chi swuared - compares error 
-
-converts t-value and df to 
-
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~
-Jesse's:
-
-model = glmer(primacy ~ 1 + modality * list_length * pres_rate + (1|subject), data=e1_data,
-              family='binomial', control=glmerControl(optimizer = "bobyqa"))
-Anova(model, type=3)
+Danny Boy
 
 ```{r}
 library(effectsize)
 library(r2glmm)
 
-# ~~~~~ Each piece separately ~~~~~
-print(anova(mod.gc1[[1]], mod.gc1[[2]])) # DB
-anova(mod.gc1[[2]])
-mod.gc1[[2]]
+# Full (2) vs. reduced (1)
+print(anova(mod.gc1[[1]], mod.gc1[[2]])) # p-value 
+#anova(mod.gc1[[2]])
+mod.gc1[[2]] # beta estimate
 summary(mod.gc1[[2]])
 
-print(anova(mod.gc2[[1]], mod.gc2[[2]])) # ITG
-anova(mod.gc2[[2]])
+# To find R^2 values:
+r2beta(mod.gc1[[2]], method = 'kr') # or 'nsj'
+```
+
+In The Garden
+
+```{r}
+# Full (2) vs. reduced (1)
+print(anova(mod.gc2[[1]], mod.gc2[[2]])) # p-value
+mod.gc2[[2]] # beta estimate
+#anova(mod.gc2[[2]])
+#summary(mod.gc2[[2]])
 mod.gc2[[2]]
 
+# To find R^2 values:
+r2beta(mod.gc2[[2]], method = 'kr') # or 'nsj'
+```
 
+
+```{r, eval=FALSE}
 # Dobri's method:
 # First, run anova on all models to find the best one
 ## Anova finds differences in variance explained by each model compared to the model that is slightly less comple. So it compares models in order of complexity (# of terms)
@@ -284,11 +301,14 @@ dfs <- parameters::model_parameters(mod, effects = "fixed", ci_method = "sattert
 t_to_omega2(t[1],df=dfs[1])
 t_to_omega2(t[2],df=dfs[2])
 
-# To find R^2 values:
-r2beta(mod, method = 'kr') # or 'nsj'
- 
+#Jesse's:
+
+#model = glmer(primacy ~ 1 + modality * list_length * pres_rate + (1|subject), data=e1_data, family='binomial', control=glmerControl(optimizer = "bobyqa"))
+#Anova(model, type=3)
+```
 
 
+```{r}
 # ~~~~~ Pieces combined ~~~~~
 #anova(mod.gcc[[7]])
 #anova(mod.gcc[[6]],mod.gcc[[5]])
@@ -304,69 +324,45 @@ r2beta(mod, method = 'kr') # or 'nsj'
 #anova(mod.gcc[[7]])
 ```
 
-r2beta: r2beta Compute R Squared for Mixed Models
-
-
-t-value: slope is significantly NOT zero
-Estimate: slope of model, effect size
-
-What does it mean for fixed effects to be correlated?
-
-
-
-
 
 ~~~~~
 
 ### Cross-correlation models:
 
-```{r}
-# Each piece separately
-anova(mod.cc1[[1]], mod.cc1[[2]]) # DB
-anova(mod.cc1[[2]])
-mod.cc1[[2]]
-summary(mod.cc1[[2]])
+Danny Boy
 
-anova(mod.cc2[[1]], mod.cc2[[2]]) # ITG
+```{r}
+print(anova(mod.cc1[[1]], mod.cc1[[2]])) # p-value
+mod.cc1[[2]] # beta estimate
+#anova(mod.cc1[[2]])
+#summary(mod.cc1[[2]])
+
+# To find R^2 values:
+r2beta(mod.cc1[[2]], method = 'kr') # or 'nsj'
+```
+
+In The Garden
+
+```{r}
+anova(mod.cc2[[1]], mod.cc2[[2]]) # p-value
 #anova(mod.cc2[[2]])
 mod.cc2[[2]]
 summary(mod.cc2[[2]])
-# 
+
+# To find R^2 values:
+r2beta(mod.cc2[[2]], method = 'kr') # or 'nsj'
+
 # print(anova(mod.ccc[[1]], mod.ccc[[2]], mod.ccc[[3]], mod.ccc[[4]], mod.ccc[[5]], mod.ccc[[6]], mod.ccc[[7]], mod.ccc[[8]])) # combined
 
 ```
 
-
-
-## Danny Boy
-
-Significant models:
-- mod.gc1[[3]]: Trial and direction fixed, participant random ***
-- mod.gc1[[4]]: Trial by direction interaction fixed, participant random *
-
-
-### ITG
-
-Significant models:
-- mod.gc2[[3]]: Trial by direction interaction fixed, participant random ***
-
-
-
-
-### Combined
+#### Combined
 
 Significant models:
 - mod.gcc[[3]]: Trial and direction fixed, participant random (with other piece data included) ***
 
 - mod.gcc[[7]]: Trial and direction fixed, participant and piece random ***
 - mod.gcc[[8]]: Trial by direction interaction fixed, participant and piece random ***
-
-
-
-Best model is: GC ~ 1 + Trial + Piece + (1 | Direction)
-Trial + piece fixed, direction random.
-Chisq = 25.27, Df = 1, p < .001
-
 
 
 ~~~~~
@@ -378,7 +374,10 @@ Assumes equal subjects in each group
 
 Trend analysis partitions the sum of squares for the model into portions due to linear trend, quadratic trend, cubic trend, etc. If there are k groups it is possible to look at up to k - 1 trends, although often researchers combine together all trends above quadratic or cubic.
 
-### Trend analysis for GC for both pieces
+
+### Granger trend analysis
+
+Danny Boy
 
 ```{r}
 contr.poly(n = 8, scores = c(1, 2, 3, 4, 5, 6, 7, 8)) # This command automatically sets up orthogonal contrasts
@@ -386,40 +385,82 @@ contr.poly(n = 8, scores = c(1, 2, 3, 4, 5, 6, 7, 8)) # This command automatical
 class(following1$Trial) # make sure Trial is an ordered factor
 unique(following1$Trial) # 8 factors
 
-## Granger
 f1.aov.gc <- aov(GC_r2p ~ Trial, data = following1) # piece 1
 summary(f1.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+```
 
+In The Garden
+
+```{r}
 f2.aov.gc <- aov(GC_r2p ~ Trial, data = following2) # piece 2
 summary(f2.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+```
 
-## Cross-correlation
+
+### Cross-correlation trend analysis
+
+Danny Boy
+
+```{r}
 f1.aov.cc <- aov(CC ~ Trial, data = following1) # piece 1
 summary(f1.aov.cc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
-# not significant 
+# not significant
+```
 
+In The Garden
+
+```{r}
 f2.aov.cc <- aov(CC ~ Trial, data = following2) # piece 2
 summary(f2.aov.cc, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
 # not significant
 
-summary(f2.aov.cc, split = list(Trial = list(linear=1, quad=2, other=3:4))) # Look specifically for quadratic trend
+# Now look specifically for quadratic trend
+summary(f2.aov.cc, split = list(Trial = list(linear=1, quad=2, other=3:4))) 
 coef(f2.aov.cc)
-
 ```
 
 
-### Trend analysis for cross-correlation
+### Log-fit for CC
+
+In The Garden
 
 ```{r}
-contr.poly(n = 8, scores = c(1, 2, 3, 4, 5, 6, 7, 8)) # This command automatically sets up orthogonal contrasts
-# These trend contrasts form an orthogonal set
-class(following1$Trial) # make sure Trial is an ordered factor
-unique(following1$Trial) # 8 factors
+plot(following1$Trial, following1$CC)
+x <- as.integer(following1$Trial)
+y <- following1$CC
+log.fit <- lm(y ~ log(x))
+summary(log.fit)
 
-## Granger
-f1.aov.gc <- aov(GC_r2p ~ Trial, data = following1) # piece 1
-summary(f1.aov.gc, split = list(Trial = list(linear=1, quadratic=2, cubic=3,quartic=4)))
 ```
+```{r}
+trials <- unique(following1$Trial)
+yy <- predict(log.fit, newdata = list(trials), interval = "confidence")
+matlines(trials, yy, lwd=2)
+
+
+thm <- theme(panel.grid.major.x = element_line(),
+             panel.grid.major.y = element_line(),
+             plot.title = element_text(size=18, vjust=.5, hjust = .5),
+             legend.title = element_text(size=14, hjust = .5),
+             legend.key.size = unit(0.5, "cm"),
+             legend.text = element_text(size=10),
+             legend.background = element_rect(color = "black"),
+             legend.position = "bottom",
+             axis.title = element_text(size=14),
+             axis.title.y = element_text(vjust=1),
+             axis.title.x = element_text(vjust=1),
+             axis.text = element_text(size=10, colour="black"))
+
+cc.fit <- ggplot(following2, mapping = aes(x=Trial, y=CC)) +
+  geom_point()
+
+  
+
+cc.fit
+```
+
+
+
 
 ## Correlations between GC and CC
 
@@ -445,11 +486,7 @@ summary(cor_mod2) # same
 plot(GC_r2p ~ CC, data=following2, type='p', xlab='CC', ylab='GC')
 abline(cor_mod2)
 
-
-
-
 ```
-
 
 
 

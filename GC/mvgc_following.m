@@ -13,16 +13,16 @@ addpath(genpath('~/Desktop/Following/ANALYSIS/GC'));
 addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 
 
-%% READ IN DATA
+%% SETTINGS
 
 % Did you just run the MASTER_preprocess_following.m script?
 carry_over = 0; % 0 for no, 1 for yes
-which_piece = 2; % Which piece are we analyzing?
-
-% Save and plot data?
-save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
+save_flag = 0; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
 % ALERT! This will overwrite existing files with the same save name!
+
 plotting_flag = 0;
+
+which_piece = 1; % Which piece are we analyzing?
 
 
 %% FIND DATA
@@ -37,6 +37,9 @@ switch carry_over
 
         section = 'whole';
         
+        data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
+        cd(data_folder)
+
         load(['D_',piece,'_',section,'.mat']); % This loads a cell array called 'D',
         % which contains a cell for each participant
     
@@ -49,9 +52,7 @@ switch carry_over
     % used (e.g. following_gc_15.csv)
 end
 
-data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
-cd(data_folder)
-addpath(data_folder)
+
 
 
 %% Parameters
@@ -239,7 +240,8 @@ if save_flag == 1
     % Run cc_following.m to calculate CC values
     wcc_following
     CC = corvals_reconfig;
-    
+
+
     %% SAVE
     % Save an Excel sheet of the data
     %T = table(participant, downsample, trial, GC_r2p, GC_p2r);
@@ -251,9 +253,12 @@ if save_flag == 1
 end
 
 
+% Find model orders
 model_orders = zeros(size(numel(D)));
-for mo = 1:numel(D)
-    model_orders(mo) = D{mo}.M_8_morder;
+for mos = 1:numel(D)
+    model_orders(mos) = D{mos}.M_8_morder;
 end
 
+mo_mean = mean(model_orders)
+mo_stdev = std(model_orders)
 
