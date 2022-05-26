@@ -1,6 +1,8 @@
 plots_following <- function(x) {
   library(grid)
   library(wesanderson)
+  library(plyr)
+  library(dplyr)
   
   plots <- {}
   thm <- theme(panel.grid.major.x = element_line(),
@@ -42,8 +44,12 @@ plots_following <- function(x) {
     
     gc_parts <- gc + facet_wrap(vars(Participant))
     
+    p_sub <- p[p$Trial %in% c(1,8),] # define subset of data: only trials 1 & 8
     vi <- ggplot(data=p, aes(x=Direction, y=GC)) +
-      geom_violin(aes(fill=Direction)) + geom_point() +
+      geom_violin(aes(fill=Direction)) + 
+      geom_point(aes(group=Trial)) +
+      geom_line(data=p_sub, aes(group=interaction(Trial, Participant), color=Trial), alpha=.7) +
+      scale_color_manual(values = c("black", "gray"), labels=c("Trial 1", "Trial 8")) +
       labs(y = "Granger causality") +
       ggtitle(title) +
       theme_bw() +

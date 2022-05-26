@@ -144,13 +144,12 @@ if(piece == "Danny Boy" && section == "whole") {
 source("Scripts/plots_following.R")
 #source("Scripts/multiplot.R")
 plots <- plots_following(dfs)
-
 ```
 
 
 ## GC values by direction
 
-```{r violin, fig.height=5.5, fig.width=8}
+```{r violin, fig.height=5.5, fig.width=10}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
