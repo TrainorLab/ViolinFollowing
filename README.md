@@ -1,8 +1,6 @@
 # ViolinFollowing
 
-This repository stores the analysis code used in experiment described in:
-
-(citation)
+This repository stores the analysis code used in the violin following study.
 
 There are 3 sections:
 

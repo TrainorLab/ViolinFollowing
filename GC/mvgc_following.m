@@ -9,25 +9,24 @@
 % To plot everything, set plotting_flag = 1
 % To save the ouput to a .csv file, set save_flag = 1
 
+cd ~/Desktop/Following/ANALYSIS/GC/
 addpath(genpath('~/Desktop/Following/ANALYSIS/GC'));
 addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 
 
 %% SETTINGS
+which_piece = 2; % 1 for Danny Boy, 2 for In The Garden
 
 % Did you just run the MASTER_preprocess_following.m script?
 carry_over = 0; % 0 for no, 1 for yes
-save_flag = 0; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
+plotting_flag = 0; % Plot?
+save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
 % ALERT! This will overwrite existing files with the same save name!
-
-plotting_flag = 0;
-
-which_piece = 1; % Which piece are we analyzing?
 
 
 %% FIND DATA
-switch carry_over
-    case 0
+switch carry_over % Case 0 --> define variables:
+    case 0 
 
         if which_piece == 1
             piece = 'Danny Boy';
@@ -51,7 +50,6 @@ switch carry_over
     % appended with a number that corresponds to the LAST downsampling rate
     % used (e.g. following_gc_15.csv)
 end
-
 
 
 
@@ -200,6 +198,15 @@ for participanti = 1:numel(D)
 end
     
 
+%% Find model orders
+model_orders = zeros(size(numel(D)));
+for mos = 1:numel(D)
+    model_orders(mos) = D{mos}.M_8_morder;
+end
+
+mo_mean = mean(model_orders);
+mo_stdev = std(model_orders);
+
 
 %% Save data
 % Make a table of raw gc scores for Violin --> Recording and Recording -->
@@ -236,29 +243,36 @@ if save_flag == 1
     
     % Make vector for trial
     trial = repmat([1:ntrials]',numel(D)*length(ds_targets),1);
+
+    % Make a vector for piece
+    piece_num = repelem(which_piece, numel(D)*size(X,3))';
     
     % Run cc_following.m to calculate CC values
-    wcc_following
-    CC = corvals_reconfig;
+    switch 0
+        case 0
+            wcc_following
+            CC = corvals_reconfig;
 
+            % Save an Excel sheet of the data
+            T = table(participant, trial, GC_r2p, GC_p2r, CC, piece_num);
+            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','Piece'};
 
-    %% SAVE
-    % Save an Excel sheet of the data
-    %T = table(participant, downsample, trial, GC_r2p, GC_p2r);
-    T = table(participant, trial, GC_r2p, GC_p2r, CC); % without downsample column
-    %T.Properties.VariableNames = {'Participant','Downsample','Trial','GC_r2p','GC_p2r'};
-    T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC'}; % without downsample column
+        case 1
+            wcc_following_lags
+            CC0 = CCs{5};
+            CC1 = CCs{1};
+            CC2 = CCs{2};
+            CC3 = CCs{3};
+            CC4 = CCs{4};
+
+            % Save an Excel sheet of the data
+            T = table(participant, trial, GC_r2p, GC_p2r, CC0, CC1, CC2, CC3, CC4, piece_num); % all CC lags
+            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC0','CC1','CC2','CC3','CC4','Piece'}; % without downsample column
+    end
+    
+    
     xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'.csv'];
     writetable(T,xlsxname);
 end
 
-
-% Find model orders
-model_orders = zeros(size(numel(D)));
-for mos = 1:numel(D)
-    model_orders(mos) = D{mos}.M_8_morder;
-end
-
-mo_mean = mean(model_orders)
-mo_stdev = std(model_orders)
 

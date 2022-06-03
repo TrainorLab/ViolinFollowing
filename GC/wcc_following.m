@@ -47,11 +47,19 @@ if strcmp(method_flag,'wcc') % Set parameters for windowed method
     sr = 8;
     sr100 = 100;
     if strcmp(piece,'Danny Boy')
-        win_len = 8.73; % Target window length in seconds (2 measures)
-        max_lag = win_len/8; % Apprx. 1 beat (2 measures = 8 quarter notes)
+        %win_len = 8.73; % Target window length in seconds (2 measures)
+        %max_lag = win_len/8; % 1 beat = quarter note (8 in 2 measures)
+        win_len = 6.63*.125;
+        %max_lag = (4/.9178)/8; % .545 (eighth note)
+        %max_lag = .4;
+        max_lag = 0;
     else
-        win_len = 5.54; % Target window length in seconds (2 measures)
-        max_lag = win_len/4; %win_len/12; % Apprx. 1 beat (2 measures = 12 eighth notes)
+        %win_len = 5.54; % Target window length in seconds (2 measures)
+        %max_lag = win_len/4; % 1 beat = dotted quarter note (4 in 2 measures)
+        win_len = 8.63*.125;
+        %max_lag = (6/2.167)/6; % sec / measure / 6 % .462 (8th note)
+        %max_lag = .4;
+        max_lag = 0;
     end
 end
 

@@ -42,7 +42,7 @@ plots_following <- function(x) {
       coord_cartesian(ylim = c(0, 0.11)) +
       thm
     
-    gc_parts <- gc + facet_wrap(vars(Participant))
+    gc_participants <- gc + facet_wrap(vars(Participant))
     
     p_sub <- p[p$Trial %in% c(1,8),] # define subset of data: only trials 1 & 8
     vi <- ggplot(data=p, aes(x=Direction, y=GC)) +
@@ -63,9 +63,9 @@ plots_following <- function(x) {
     # ~~~~~
   
     q <- x[[g+2]] # CC data from piece 1 and then piece 2
-    cc <- ggplot(q, aes(x=Trial, y=CC, Group=1)) +
+    cc <- ggplot(q, aes(x=Trial, y=CC)) +
       #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
-      stat_summary(fun = mean, geom = "point", color="blue", size=2) +
+      stat_summary(fun = mean, geom = "point", aes(group=1), size=2) +
       stat_summary(fun = mean, geom = "line", aes(group=1), color="blue", size=1) +
       stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2) +
       labs(x = "Trial", y = "Cross-correlation") +
@@ -78,15 +78,16 @@ plots_following <- function(x) {
       #coord_cartesian(ylim = c(0, 0.11)) +
       thm
     
-    cc_parts <- cc + facet_wrap(vars(Participant))
+    cc_participants <- cc + facet_wrap(vars(Participant))
     
     plots[[g]] <- gc
     plots[[g+2]] <- cc
     plots[[g+6]] <- vi
-    plots[[g+8]] <- gc_parts
-    plots[[g+10]] <- cc_parts
+    plots[[g+8]] <- gc_participants
+    plots[[g+10]] <- cc_participants
     
   } # (end of for loop)
+  
   
   # ~~~~~ Pieces combined
   
@@ -105,25 +106,44 @@ plots_following <- function(x) {
     coord_cartesian(ylim = c(0, 0.11)) +
     thm
   
+  
   s <- x[[6]] # CC values for both pieces
-  ccs <- ggplot(s, aes(x=Trial, y=CC, Group=1)) +
-    #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
-    stat_summary(fun = mean, geom = "point", color="blue", size=2) +
-    stat_summary(fun = mean, geom = "line", aes(group=1), color="blue", size=1) +
+  ccs <- ggplot(s, aes(x=Trial, y=CC)) + #group_by()=1)) +
+    geom_smooth(method='lm', se=FALSE, col='red', size=2) +
+    stat_summary(fun = mean, geom = "point", color="blue", aes(group=1), size=2) +
+    stat_summary(fun = mean, geom = "line", color="blue", aes(group=1), size=1) +
     stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2) +
     labs(x = "Trial", y = "Cross-correlation") +
-    #ggtitle(Piece) +
+    ggtitle("Piece") +
     theme_bw() +
     #scale_color_manual(values=c('darkorchid4','springgreen4')) +
     #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
     #scale_fill_brewer("Group", palette = "Dark2") +
     #scale_y_continuous(limits = c(0.00, 0.2)) +
-    #coord_cartesian(ylim = c(0, 0.11)) +
+    coord_cartesian(ylim = c(0.82, 0.89)) +
+    thm
+  
+  
+  # CC with lag 0 for both pieces (then separate after)
+  ccs_0 <- ggplot(s, aes(x=Trial, y=CC0)) + #group_by()=1)) +
+    #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
+    stat_summary(fun = mean, geom = "point", color="blue", aes(group=1), size=2) +
+    stat_summary(fun = mean, geom = "line", color="blue", aes(group=1), size=1) +
+    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2) +
+    labs(x = "Trial", y = "Cross-correlation (0 lag)") +
+    #ggtitle("Piece") +
+    theme_bw() +
+    #scale_color_manual(values=c('darkorchid4','springgreen4')) +
+    #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
+    #scale_fill_brewer("Group", palette = "Dark2") +
+    #scale_y_continuous(limits = c(0.82, 0.89)) +
+    coord_cartesian(ylim = c(0.82, 0.89)) +
     thm
   
   plots[[5]] <- gcs
   plots[[6]] <- ccs
-
+  plots[[13]] <- ccs_0
+  
   return(plots)
 }
 
