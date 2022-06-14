@@ -1,33 +1,14 @@
 # Gitignore file for Violin following repo
+*
 
-# Ignore system-specific files
-.gitignore
-.Rproj.user
-.ipynb_checkpoints/
+!Amp_envs/*
+!GC/*
+GC/Other/*
 
+!Stats/Scripts/Master_following.Rmd
+!Stats/Scripts/Master_following.html
+!Stats/Scripts/prep_following.R
+!Stats/Scripts/plots_following.R
+!Stats/Scripts/lmer_following.R
 
-# Ignore certain types of files
-*.Rhistory
-*.csv
-*.rda
-*.Rproj
-*.mat
-*.DS_Store
-*.texpadtmp/
-
-
-# Ignore folders
-Other/
-Danny Boy/
-In The Garden/
-Stats/History/
-Stats/Images/
-Manuscript/
-
-# !Manuscript/
-
-# GC/.DS_Store
-# GC/CC_analysis/.DS_Store
-GC/corrgram.m
-GC/morders_avg.m
-GC/cc_following.m
+!README.md
