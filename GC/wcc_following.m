@@ -51,15 +51,15 @@ if strcmp(method_flag,'wcc') % Set parameters for windowed method
         %max_lag = win_len/8; % 1 beat = quarter note (8 in 2 measures)
         win_len = 6.63*.125;
         %max_lag = (4/.9178)/8; % .545 (eighth note)
-        %max_lag = .4;
-        max_lag = 0;
+        max_lag = .4;
+        max_lag0 = 0;
     else
         %win_len = 5.54; % Target window length in seconds (2 measures)
         %max_lag = win_len/4; % 1 beat = dotted quarter note (4 in 2 measures)
         win_len = 8.63*.125;
         %max_lag = (6/2.167)/6; % sec / measure / 6 % .462 (8th note)
-        %max_lag = .4;
-        max_lag = 0;
+        max_lag = .4;
+        max_lag0 = 0;
     end
 end
 
@@ -78,6 +78,7 @@ for participanti = 1:numel(D) % Loop through all participants
             case 'wcc'
                 window = round(win_len*sr); % # of data points
                 maxlag = round(max_lag*sr);
+                maxlag0 = round(max_lag0*sr);
                 overlap = round(window/2); % half a window overlap
             case 'gc_order'
                 label_morder = [label + '_morder'];
@@ -93,6 +94,7 @@ for participanti = 1:numel(D) % Loop through all participants
         %% Run CC
 
         cor_vals = zeros(size(X,3),1); % num_trials x num_participants
+        cor_vals0 = zeros(size(X,3),1);
 
         for triali = 1:size(X,3) % Loop through trials
             switch method_flag
@@ -100,8 +102,11 @@ for participanti = 1:numel(D) % Loop through all participants
                     A = X(1,:,triali);
                     B = X(2,:,triali);
                     [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
+                    [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
                     cor_val = max(abs(wcc),[],'all');
+                    cor_val0 = max(abs(wcc0),[],'all');
                     cor_vals(triali,1) = cor_val;
+                    cor_vals0(triali,1) = cor_val0;
                     %cor_vals = max(abs(corrgram(A,B, maxlag, window, overlap)),[],'all');
 
 
@@ -117,8 +122,10 @@ for participanti = 1:numel(D) % Loop through all participants
             
         % CROSS-CORRELATION
         cc_label = ['cc_' + string(ds_target) + method_flag];
+        cc_label0 = ['cc0_' + string(ds_target) + method_flag];
         
         D{participanti}.(cc_label) = cor_vals;
+        D{participanti}.(cc_label0) = cor_vals0;
         
         % Dobri's method:
         %sr = 8;
@@ -136,17 +143,20 @@ participant = repelem([1:numel(D)]', size(X,3)*length(ds_targets));
 downsample = repmat(repelem(ds_targets', size(X,3)), numel(D), 1);
 trial = repmat([1:size(X,3)]', numel(D)*length(ds_targets), 1);
 corvals_reconfig = [];
+corvals_reconfig0 = [];
 
 for parti = 1:numel(D)
     for ds_target = ds_targets
         cc_lab = 'cc_' + string(ds_target) + method_flag; % find CC values within each participant's cell in D
+        cc_lab0 = 'cc0_' + string(ds_target) + method_flag;
         % corvals_reconfig = cat(1,corvals_reconfig,D{parti}.(cc_lab));
         corvals_reconfig = [corvals_reconfig;D{parti}.(cc_lab)];
+        corvals_reconfig0 = [corvals_reconfig0;D{parti}.(cc_lab0)];
     end
 end
 
 if save_flag == 1
-    T = table(participant, downsample, trial, corvals_reconfig);
+    T = table(participant, downsample, trial, corvals_reconfig, corvals_reconfig0);
     T.Properties.VariableNames = {'Participant','Downsample','Trial','CCvals'};
     filename = ['~/Desktop/Following/ANALYSIS/3R/following_cc',piece,'.csv'];
     writetable(T,filename);

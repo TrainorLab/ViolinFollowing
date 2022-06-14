@@ -15,7 +15,6 @@ addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 
 
 %% SETTINGS
-which_piece = 2; % 1 for Danny Boy, 2 for In The Garden
 
 % Did you just run the MASTER_preprocess_following.m script?
 carry_over = 0; % 0 for no, 1 for yes
@@ -23,10 +22,10 @@ plotting_flag = 0; % Plot?
 save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
 % ALERT! This will overwrite existing files with the same save name!
 
-
-%% FIND DATA
 switch carry_over % Case 0 --> define variables:
-    case 0 
+    case 0
+        % CHANGE THIS:
+        which_piece = 1; % 1 for Danny Boy, 2 for In The Garden
 
         if which_piece == 1
             piece = 'Danny Boy';
@@ -35,7 +34,8 @@ switch carry_over % Case 0 --> define variables:
         end
 
         section = 'whole';
-        
+
+        % Find data
         data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
         cd(data_folder)
 
@@ -252,10 +252,11 @@ if save_flag == 1
         case 0
             wcc_following
             CC = corvals_reconfig;
+            CC0 = corvals_reconfig0;
 
             % Save an Excel sheet of the data
-            T = table(participant, trial, GC_r2p, GC_p2r, CC, piece_num);
-            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','Piece'};
+            T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, piece_num);
+            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','Piece'};
 
         case 1
             wcc_following_lags

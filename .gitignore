@@ -1,12 +1,33 @@
-.DS_Store
-GC/.DS_Store
-GC/CC_analysis/.DS_Store
+# Gitignore file for Violin following repo
+
+# Ignore system-specific files
+.gitignore
 .Rproj.user
-*.Rhistory
-Stats/History/
-Stats/Images/
 .ipynb_checkpoints/
+
+
+# Ignore certain types of files
+*.Rhistory
 *.csv
 *.rda
 *.Rproj
+*.mat
+*.DS_Store
+*.texpadtmp/
+
+
+# Ignore folders
 Other/
+Danny Boy/
+In The Garden/
+Stats/History/
+Stats/Images/
+Manuscript/
+
+# !Manuscript/
+
+# GC/.DS_Store
+# GC/CC_analysis/.DS_Store
+GC/corrgram.m
+GC/morders_avg.m
+GC/cc_following.m

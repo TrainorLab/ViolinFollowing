@@ -1,8 +1,7 @@
-% This script can take ~40 minutes to run
+% ALERT! This script can take ~40 minutes to run
 
 %% Preprocess data for MVGC toolbox
 % Lucas Klein
-% June 2020
 % Edited January 2022
 
 % This script reads in data from each participant stored as text files and
@@ -11,8 +10,14 @@
 clear variables
 
 % ~~~ CHANGE THESE ~~~
-piece = 'In The Garden'; % Danny Boy or In The Garden
-section = 'whole'; % Enter   
+which_piece = 1; % 1 for DB, 2 for ITG
+section = 'whole';
+
+if which_piece == 1
+    piece = 'Danny Boy';
+else
+    piece = 'In The Garden';
+end
 
 
 %% FIND DATA
