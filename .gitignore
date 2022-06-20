@@ -12,3 +12,4 @@ GC/Other/*
 !Stats/Scripts/lmer_following.R
 
 !README.md
+.Rproj.user
