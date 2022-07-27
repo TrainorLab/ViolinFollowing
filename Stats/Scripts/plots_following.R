@@ -7,16 +7,18 @@ plots_following <- function(x) {
   plots <- {}
   thm <- theme(panel.grid.major.x = element_line(),
                panel.grid.major.y = element_line(),
-               plot.title = element_text(size=18, vjust=.5, hjust = .5),
-               legend.title = element_text(size=14, hjust = .5),
-               legend.key.size = unit(0.5, "cm"),
-               legend.text = element_text(size=10),
-               legend.background = element_rect(color = "black"),
-               legend.position = "bottom",
-               axis.title = element_text(size=14),
+               plot.title = element_text(size=24, vjust=.5, hjust = .5),
+               axis.title = element_text(size=20),
                axis.title.y = element_text(vjust=1),
                axis.title.x = element_text(vjust=1),
-               axis.text = element_text(size=10, colour="black"))
+               axis.text = element_text(size=16, colour="black"),
+               legend.title = element_text(size=20, hjust = .5),
+               legend.text = element_text(size=16),
+               legend.key.size = unit(0.5, "cm"),
+               legend.background = element_rect(color = "black"),
+               legend.position = "bottom",
+               strip.text = element_text(size = 18))
+               
 
   for (g in 1:2){ # Do plotting (and save) for each piece separately
     
@@ -44,6 +46,7 @@ plots_following <- function(x) {
     
     gc_participants <- gc + facet_wrap(vars(Participant))
     
+    # VIOLIN PLOTS
     p_sub <- p[p$Trial %in% c(1,8),] # define subset of data: only trials 1 & 8
     vi <- ggplot(data=p, aes(x=Direction, y=GC)) +
       geom_violin(aes(fill=Direction)) + 
@@ -57,7 +60,9 @@ plots_following <- function(x) {
       #scale_color_brewer(palette = "Dark2") +
       thm +
       theme(axis.text.x=element_blank(),
-            legend.title = element_blank())
+            legend.title = element_blank()) +
+      #coord_cartesian(ylim = c(0, 0.16))
+      scale_y_continuous(limits = c(0.00, 0.17)) 
             
     
     # ~~~~~

@@ -20,8 +20,7 @@ knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats")
 
 ```{r load, message=FALSE, results='hide'}
 setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats")
-imageDirectory <- "/Users/lucas/Desktop/Following/ANALYSIS/Stats/Images"
-final_images <- "/Users/lucas/Library/CloudStorage/OneDrive-McMasterUniversity/1_RESEARCH/1_TrainorLab/2_Following/Manuscript/Images/"
+imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/"
 
 # necessary
 library(readr) # for reading in csv files
@@ -169,14 +168,14 @@ plots <- plots_following(dfs)
 
 ## GC values by direction
 
-```{r violin, fig.height=5.5, fig.width=10}
+```{r violin, fig.height=4.5, fig.width=7}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
           labels = c('A','B'))
 violin_all
 
-ggsave(paste(final_images,"violin_all.png", sep=''), violin_all)
+ggsave(paste(imageDirectory,"violin.jpg", sep=''), violin_all)
 ```
 
 Figure \ref{fig:violin} shows.....
@@ -184,18 +183,17 @@ Figure \ref{fig:violin} shows.....
 
 ## GC and CC by trial
 
-```{r GC_combined, fig.height=5, fig.width=7}
+```{r GC_combined, fig.height=4.5, fig.width=7}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
 GC_combined <- plots[[5]] + facet_wrap(~Piece, labeller = as_labeller(plot_names)) #"label_both")
 GC_combined
-GC_combined
-ggsave(paste(final_images,"GC_combined.png",sep=''),GC_combined)
+ggsave(paste(imageDirectory,"GC_combined.jpg",sep=''),GC_combined)
 ```
 
 
-```{r CC_all, fig.height=8, fig.width=7}
+```{r CC_all, fig.height=7, fig.width=6.5}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
@@ -211,7 +209,7 @@ CC_all
 
 #mplot <- multiplot(plotlist=plots,layout=matrix(c(1,2),nrow=1,byrow=TRUE))
 
-ggsave(paste(final_images,"CC_all.png",sep=''),CC_all)
+ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
 ```
 
 Figure \ref{fig:allplots} shows
@@ -674,8 +672,8 @@ corr_plot2 <- plot(GC_r2p ~ CC, data=following2, type='p', xlab='CC', ylab='GC')
   abline(cor_mod2) +
   title("ITG")
 
-ggsave(paste(final_images,"corr_plot1.png",sep=''),corr_plot1)
-ggsave(paste(final_images,"corr_plot2.png",sep=''),corr_plot2)
+ggsave(paste(imageDirectory,"corr_plot1.png",sep=''),corr_plot1)
+ggsave(paste(imageDirectory,"corr_plot2.png",sep=''),corr_plot2)
 ```
 
 

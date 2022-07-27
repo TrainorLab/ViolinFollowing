@@ -99,15 +99,19 @@ for participanti = 1:numel(D) % Loop through all participants
         for triali = 1:size(X,3) % Loop through trials
             switch method_flag
                 case 'wcc'
-                    A = X(1,:,triali);
-                    B = X(2,:,triali);
+                    A = X(1,:,triali); % Recording to performance
+                    B = X(2,:,triali); % Performance to recording
+
+                    % Max lag
                     [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
-                    [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
                     cor_val = max(abs(wcc),[],'all');
-                    cor_val0 = max(abs(wcc0),[],'all');
                     cor_vals(triali,1) = cor_val;
-                    cor_vals0(triali,1) = cor_val0;
                     %cor_vals = max(abs(corrgram(A,B, maxlag, window, overlap)),[],'all');
+
+                    % 0 lag
+                    [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
+                    cor_val0 = max(abs(wcc0),[],'all');
+                    cor_vals0(triali,1) = cor_val0;
 
 
                 case 'gc_order'
