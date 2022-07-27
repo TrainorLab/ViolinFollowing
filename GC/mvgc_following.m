@@ -254,6 +254,7 @@ if save_flag == 1
             CC = corvals_reconfig;
             CC0 = corvals_reconfig0;
             CC_l = corvals_reconfig_lags;
+            % CHANGES
 
             % Save an Excel sheet of the data
             T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, CC_l, piece_num);
