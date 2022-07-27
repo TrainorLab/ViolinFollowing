@@ -12,14 +12,14 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 
-knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats")
+knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
 ```
 
 
 # Prep and load
 
 ```{r load, message=FALSE, results='hide'}
-setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats")
+setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
 imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/"
 
 # necessary
@@ -86,7 +86,6 @@ print(colSums(is.na(following2)))
 Both dataframes are currently in wide format, with a column for cross-correlation values. This removes the CC column and creates long-formatted dataframes for both pieces, including a combined version of both together. Then outputs these three dataframes in a list.
 
 Recording to performance direction = 1
-
 Performance to recording direction = 2
 
 ```{r}

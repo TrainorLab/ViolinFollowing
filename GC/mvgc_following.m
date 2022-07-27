@@ -25,7 +25,7 @@ save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, s
 switch carry_over % Case 0 --> define variables:
     case 0
         % CHANGE THIS:
-        which_piece = 1; % 1 for Danny Boy, 2 for In The Garden
+        which_piece = 2; % 1 for Danny Boy, 2 for In The Garden
 
         if which_piece == 1
             piece = 'Danny Boy';
@@ -253,10 +253,11 @@ if save_flag == 1
             wcc_following
             CC = corvals_reconfig;
             CC0 = corvals_reconfig0;
+            CC_l = corvals_reconfig_lags;
 
             % Save an Excel sheet of the data
-            T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, piece_num);
-            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','Piece'};
+            T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, CC_l, piece_num);
+            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','CC_l','Piece'};
 
         case 1
             wcc_following_lags
