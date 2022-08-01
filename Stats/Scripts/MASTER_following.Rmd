@@ -59,8 +59,8 @@ filename2 <- paste("following_",piece2,"_",section,".csv",sep='')
 
 following1 <- read.csv(filename1, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
 following2 <- read.csv(filename2, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
-following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
-following2_lag0 <- read.csv("following_In The Garden_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
+#following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
+#following2_lag0 <- read.csv("following_In The Garden_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
 
 #ccorr <- read.csv("ccorr.csv", header = TRUE, na.strings = c("", "NA"))
 
@@ -86,7 +86,6 @@ print(colSums(is.na(following2)))
 Both dataframes are currently in wide format, with a column for cross-correlation values. This removes the CC column and creates long-formatted dataframes for both pieces, including a combined version of both together. Then outputs these three dataframes in a list.
 
 Recording to performance direction = 1
-
 Performance to recording direction = 2
 
 ```{r}
@@ -98,8 +97,8 @@ Performance to recording direction = 2
 # following2$Trial <- factor(following2$Trial, ordered = TRUE)
 # following2$Participant <- factor(following2$Participant, ordered = FALSE)
 
-following1$CC0 <- following1_lag0$CC
-following2$CC0 <- following2_lag0$CC
+#following1$CC0 <- following1_lag0$CC
+#%following2$CC0 <- following2_lag0$CC
 
 source("Scripts/prep_following.R")
 dfs <- prep_following(following1, following2) # list of 3 items: lf1, lf2, lf_comb

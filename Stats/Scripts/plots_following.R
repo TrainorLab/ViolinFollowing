@@ -7,17 +7,17 @@ plots_following <- function(x) {
   plots <- {}
   thm <- theme(panel.grid.major.x = element_line(),
                panel.grid.major.y = element_line(),
-               plot.title = element_text(size=24, vjust=.5, hjust = .5),
-               axis.title = element_text(size=20),
+               plot.title = element_text(size=16, vjust=.5, hjust = .5),
+               axis.title = element_text(size=12),
                axis.title.y = element_text(vjust=1),
                axis.title.x = element_text(vjust=1),
-               axis.text = element_text(size=16, colour="black"),
-               legend.title = element_text(size=20, hjust = .5),
-               legend.text = element_text(size=16),
+               axis.text = element_text(size=10, colour="black"),
+               legend.title = element_text(size=16, hjust = .5),
+               legend.text = element_text(size=10),
                legend.key.size = unit(0.5, "cm"),
                legend.background = element_rect(color = "black"),
                legend.position = "bottom",
-               strip.text = element_text(size = 18))
+               strip.text = element_text(size = 16))
                
 
   for (g in 1:2){ # Do plotting (and save) for each piece separately

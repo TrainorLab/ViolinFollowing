@@ -104,14 +104,12 @@ for participanti = 1:numel(D) % Loop through all participants
 
                     % Max lag
                     [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
-                    cor_val = max(abs(wcc),[],'all');
-                    cor_vals(triali,1) = cor_val;
+                    cor_vals(triali,1) = max(abs(wcc),[],'all');
                     %cor_vals = max(abs(corrgram(A,B, maxlag, window, overlap)),[],'all');
 
                     % 0 lag
                     [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
-                    cor_val0 = max(abs(wcc0),[],'all');
-                    cor_vals0(triali,1) = cor_val0;
+                    cor_vals0(triali,1) = max(abs(wcc0),[],'all');
 
 
                 case 'gc_order'
