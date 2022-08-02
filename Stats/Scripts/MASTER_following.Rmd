@@ -36,6 +36,7 @@ library(ggpubr) # for arranging plots
 library(grid)
 library(effectsize)
 library(r2glmm)
+library(rlang)
 
 # possibly not necessary?
 # library(lsr)
@@ -59,8 +60,8 @@ filename2 <- paste("following_",piece2,"_",section,".csv",sep='')
 
 following1 <- read.csv(filename1, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
 following2 <- read.csv(filename2, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
-following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
-following2_lag0 <- read.csv("following_In The Garden_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
+#following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = %c("","NA"))
+#following2_lag0 <- read.csv("following_In The Garden_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
 
 #ccorr <- read.csv("ccorr.csv", header = TRUE, na.strings = c("", "NA"))
 
@@ -89,16 +90,8 @@ Recording to performance direction = 1
 Performance to recording direction = 2
 
 ```{r}
-# Make Trial and Participant factors
-## This is necessary for reshaping the data correctly
-# following1$Trial <- factor(following1$Trial, ordered = TRUE)
-# following1$Participant <- factor(following1$Participant, ordered = FALSE)
-# 
-# following2$Trial <- factor(following2$Trial, ordered = TRUE)
-# following2$Participant <- factor(following2$Participant, ordered = FALSE)
-
-following1$CC0 <- following1_lag0$CC
-following2$CC0 <- following2_lag0$CC
+#following1$CC0 <- following1_lag0$CC
+#following2$CC0 <- following2_lag0$CC
 
 source("Scripts/prep_following.R")
 dfs <- prep_following(following1, following2) # list of 3 items: lf1, lf2, lf_comb
@@ -152,22 +145,15 @@ if(piece == "Danny Boy" && section == "whole") {
   plot_title <- "Piece 2: In The Garden"
 }
 
-# Auto
-#plot_title1 <- paste(piece," - ","section ",section,sep = '')
-#plot_title <- paste("Section ",section,sep = '')
-# Manual
-#plot_title <- "In The Garden - 'by ear' players"
-
 # Make plots
 source("Scripts/plots_following.R")
-#source("Scripts/multiplot.R")
 plots <- plots_following(dfs)
 ```
 
 
 ## GC values by direction
 
-```{r violin, fig.height=4.5, fig.width=7}
+```{r violin, fig.height=4.5, fig.width=6.5}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
@@ -182,7 +168,7 @@ Figure \ref{fig:violin} shows.....
 
 ## GC and CC by trial
 
-```{r GC_combined, fig.height=4.5, fig.width=7}
+```{r GC_combined, fig.height=4.5, fig.width=6.5}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
@@ -197,28 +183,35 @@ plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
 CC_combined <- plots[[6]] + facet_wrap(~Piece, labeller = as_labeller(plot_names))
-
 CC_combined_0lag <- plots[[13]] + facet_wrap(~Piece, labeller = as_labeller(plot_names))
 
 CC_all <- ggarrange(CC_combined, CC_combined_0lag, ncol = 1,
                        labels = c('A','B'))
 #  theme(legend.position = "none")
-
 CC_all
 
 #mplot <- multiplot(plotlist=plots,layout=matrix(c(1,2),nrow=1,byrow=TRUE))
-
 ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
+
+#plots[[9]] # plots of GC values for each participant, Piece 1
+#plots[[10]] # plots of GC values for each participant, Piece 2
+#plots[[6]] # CC values over trials, separated by piece
 ```
 
 Figure \ref{fig:allplots} shows
 
-### GC for individual participants
 
-```{r gc_parts, eval=FALSE, fig.height=5.5, fig.width=8}
-plots[[9]] # plots of GC values for each participant, Piece 1
-plots[[10]] # plots of GC values for each participant, Piece 2
-plots[[6]]
+### Best lags by trials
+The lag value of
+
+```{r lags, fig.height=4, fig.width=6.5}
+source("Scripts/plots_following.R")
+plots <- plots_following(dfs)
+
+CC_combined_lags <- plots[[14]] + facet_wrap(~Piece, labeller = as_labeller(plot_names), strip.position = "top")
+CC_combined_lags
+
+ggsave(paste(imageDirectory,"lags.jpg",sep=''),CC_combined_lags)
 ```
 
 
@@ -387,6 +380,17 @@ DBmcc_pval <- round(anova.cc1$`Pr(>Chisq)`[2], digits = 3)
 ITGmcc_beta <- round(fixef(mod.cc2[[2]])[2], digits = 3)
 ITGmcc_rsq <- round(r2beta(mod.cc2[[2]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
 ITGmcc_pval <- round(anova.cc2$`Pr(>Chisq)`[2], digits = 3)
+```
+
+
+Best lags:
+
+```{r}
+anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
+anova.cc1.L
+
+anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
+anova.cc2.L
 ```
 
 

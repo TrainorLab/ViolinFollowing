@@ -10,7 +10,7 @@ addpath(genpath('~/Desktop/Following/ANALYSIS/'));
 % ~~~ CHANGE THESE ~~~
 % Carry in variables from preprocessing script, or change them?
 carry_over = 1; % 1 for yes (default), 0 for no
-save_flag = 0;
+save_flg = 0;
 
 if carry_over == 0 % if we don't carry over, say which piece we're analyzing here
     piece = 'Danny Boy'; % Which piece are we analyzing?
@@ -104,8 +104,7 @@ for participanti = 1:numel(D) % Loop through all participants
 
                     % Max lag
                     [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
-                    cor_val = max(abs(wcc),[],'all');
-                    cor_vals(triali,1) = cor_val;
+                    cor_vals(triali,1) = max(abs(wcc),[],'all');
 
                     [indexR,indexC] = find(abs(wcc)==max(abs(wcc),[],'all')); % find index of max CC value
                     maxlag_index(triali,1) = indexR;
@@ -113,8 +112,7 @@ for participanti = 1:numel(D) % Loop through all participants
 
                     % 0 lag
                     [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
-                    cor_val0 = max(abs(wcc0),[],'all');
-                    cor_vals0(triali,1) = cor_val0;
+                    cor_vals0(triali,1) = max(abs(wcc0),[],'all');
 
 
                 case 'gc_order'
@@ -164,7 +162,7 @@ for parti = 1:numel(D)
     end
 end
 
-if save_flag == 1
+if save_flg == 1
     participant = repelem([1:numel(D)]', size(X,3)*length(ds_targets));
     downsample = repmat(repelem(ds_targets', size(X,3)), numel(D), 1);
     trial = repmat([1:size(X,3)]', numel(D)*length(ds_targets), 1);

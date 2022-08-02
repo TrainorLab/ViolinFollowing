@@ -5,21 +5,36 @@ plots_following <- function(x) {
   library(dplyr)
   
   plots <- {}
+  # thm <- theme(panel.grid.major.x = element_line(),
+  #              panel.grid.major.y = element_line(),
+  #              plot.title = element_text(size=24, vjust=.5, hjust = .5),
+  #              axis.title = element_text(size=20),
+  #              axis.title.y = element_text(vjust=1),
+  #              axis.title.x = element_text(vjust=1),
+  #              axis.text = element_text(size=16, colour="black"),
+  #              legend.title = element_text(size=20, hjust = .5),
+  #              legend.text = element_text(size=16),
+  #              legend.key.size = unit(0.5, "cm"),
+  #              legend.background = element_rect(color = "black"),
+  #              legend.position = "bottom",
+  #              strip.text = element_text(size = 18))
+  # 
   thm <- theme(panel.grid.major.x = element_line(),
                panel.grid.major.y = element_line(),
-               plot.title = element_text(size=24, vjust=.5, hjust = .5),
-               axis.title = element_text(size=20),
+               plot.title = element_text(size=15, vjust=.5, hjust = .5),
+               axis.title = element_text(size=13),
                axis.title.y = element_text(vjust=1),
                axis.title.x = element_text(vjust=1),
-               axis.text = element_text(size=16, colour="black"),
-               legend.title = element_text(size=20, hjust = .5),
-               legend.text = element_text(size=16),
+               axis.text = element_text(size=9, colour="black"),
+               #legend.title = element_text(size=16, hjust = .5),
+               legend.text = element_text(size=9),
                legend.key.size = unit(0.5, "cm"),
                legend.background = element_rect(color = "black"),
                legend.position = "bottom",
-               strip.text = element_text(size = 18))
-               
+               strip.text = element_text(size = 12))
 
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   for (g in 1:2){ # Do plotting (and save) for each piece separately
     
     if (g == 1){
@@ -94,7 +109,7 @@ plots_following <- function(x) {
   } # (end of for loop)
   
   
-  # ~~~~~ Pieces combined
+  # ~~~~~ Pieces combined ~~~~~
   
   r <- x[[5]] # GC values for both pieces
   gcs <- ggplot(data=r, aes(Trial, GC, color = Direction)) +
@@ -110,14 +125,15 @@ plots_following <- function(x) {
     #scale_y_continuous(limits = c(0.00, 0.2)) +
     coord_cartesian(ylim = c(0, 0.11)) +
     thm
+  plots[[5]] <- gcs
   
-  
+  # ~~~~~
   s <- x[[6]] # CC values for both pieces
-  ccs <- ggplot(s, aes(x=Trial, y=CC)) + #group_by()=1)) +
+  ccs <- ggplot(s, aes(x=Trial, y=CC, color = Piece)) + #group_by()=1)) +
     geom_smooth(method='lm', se=FALSE, col='red', size=2) +
-    stat_summary(fun = mean, geom = "point", color="blue", aes(group=1), size=2) +
-    stat_summary(fun = mean, geom = "line", color="blue", aes(group=1), size=1) +
-    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2) +
+    stat_summary(fun = mean, geom = "point", color="blue", aes(group=Piece), size=2) +
+    stat_summary(fun = mean, geom = "line", color="blue", aes(group=Piece), size=1) +
+    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
     labs(x = "Trial", y = "Cross-correlation") +
     ggtitle("Piece") +
     theme_bw() +
@@ -127,14 +143,14 @@ plots_following <- function(x) {
     #scale_y_continuous(limits = c(0.00, 0.2)) +
     coord_cartesian(ylim = c(0.82, 0.89)) +
     thm
-  
+  plots[[6]] <- ccs
   
   # CC with lag 0 for both pieces (then separate after)
   ccs_0 <- ggplot(s, aes(x=Trial, y=CC0)) + #group_by()=1)) +
     #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
-    stat_summary(fun = mean, geom = "point", color="blue", aes(group=1), size=2) +
-    stat_summary(fun = mean, geom = "line", color="blue", aes(group=1), size=1) +
-    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2) +
+    stat_summary(fun = mean, geom = "point", color="blue", aes(group=Piece), size=2) +
+    stat_summary(fun = mean, geom = "line", color="blue", aes(group=Piece), size=1) +
+    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
     labs(x = "Trial", y = "Cross-correlation (0 lag)") +
     #ggtitle("Piece") +
     theme_bw() +
@@ -144,10 +160,38 @@ plots_following <- function(x) {
     #scale_y_continuous(limits = c(0.82, 0.89)) +
     coord_cartesian(ylim = c(0.82, 0.89)) +
     thm
-  
-  plots[[5]] <- gcs
-  plots[[6]] <- ccs
   plots[[13]] <- ccs_0
+  
+  # ccs_l <- ggplot(s, aes(x=Trial, y=CC_l, color=Piece)) +
+  #   #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
+  #   stat_summary(fun = mean, geom = "point", color="blue", aes(group=Piece), size=2) +
+  #   stat_summary(fun = mean, geom = "line", color="blue", aes(group=Piece), size=1) +
+  #   stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
+  #   labs(x = "Trial", y = "Cross-correlation (0 lag)") +
+  #   #ggtitle("Piece") +
+  #   theme_bw() +
+  #   #scale_color_manual(values=c('darkorchid4','springgreen4')) +
+  #   #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
+  #   #scale_fill_brewer("Group", palette = "Dark2") +
+  #   #scale_y_continuous(limits = c(0.82, 0.89)) +
+  #   #coord_cartesian(ylim = c(0.82, 0.89)) +
+  #   thm
+  
+  ccs_l <- ggplot(s, aes(x=Trial, y=CC_l, color=Piece)) +
+    #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
+    stat_summary(fun = mean, geom = "point", color="blue", aes(group=Piece), size=2) +
+    stat_summary(fun = mean, geom = "line", color="blue", aes(group=Piece), size=1) +
+    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
+    labs(x = "Trial", y = "Best lags") +
+    #ggtitle("Piece") +
+    theme_bw() +
+    #scale_color_manual(values=c('darkorchid4','springgreen4')) +
+    #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
+    #scale_fill_brewer("Group", palette = "Dark2") +
+    #scale_y_continuous(limits = c(0.82, 0.89)) +
+    #coord_cartesian(ylim = c(0.82, 0.89)) +
+    thm
+  plots[[14]] <- ccs_l
   
   return(plots)
 }
