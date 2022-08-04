@@ -181,11 +181,11 @@ plots_following <- function(x) {
     #geom_smooth(method='lm', se=FALSE, col='red', size=2) +
     stat_summary(fun = mean, geom = "point", color="blue", aes(group=Piece), size=2) +
     stat_summary(fun = mean, geom = "line", color="blue", aes(group=Piece), size=1) +
-    stat_summary(fun.data = mean_se, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
-    labs(x = "Trial", y = "Best lags") +
-    #ggtitle("Piece") +
-    theme_bw() +
-    #scale_color_manual(values=c('darkorchid4','springgreen4')) +
+    stat_summary(fun.data = mean_sd, geom = "errorbar", color="blue", width = 0.2, aes(group=Piece)) +
+    labs(x = "Trial", y = "Best time lags") +
+    ggtitle("Piece") +
+    #theme_bw() +
+    scale_color_manual(values=c('darkorchid4','springgreen4')) +
     #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
     #scale_fill_brewer("Group", palette = "Dark2") +
     #scale_y_continuous(limits = c(0.82, 0.89)) +

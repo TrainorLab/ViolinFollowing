@@ -201,17 +201,59 @@ ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
 Figure \ref{fig:allplots} shows
 
 
-### Best lags by trials
+## Best lags by trials
 The lag value of
 
 ```{r lags, fig.height=4, fig.width=6.5}
 source("Scripts/plots_following.R")
 plots <- plots_following(dfs)
+plots[[14]]
 
 CC_combined_lags <- plots[[14]] + facet_wrap(~Piece, labeller = as_labeller(plot_names), strip.position = "top")
 CC_combined_lags
 
 ggsave(paste(imageDirectory,"lags.jpg",sep=''),CC_combined_lags)
+```
+
+
+```{r lags_sd, fig.height=4, fig.width=6.5}
+lags1.sd <- data.frame(1:8,tapply(cc1$CC_l, cc1$Trial, sd))
+names(lags1.sd) <- c("Trial","SD_bestlag")
+lags1.sd$Piece <- 1
+
+lags2.sd <- data.frame(1:8,tapply(cc2$CC_l, cc2$Trial, sd))
+names(lags2.sd) <- c("Trial","SD_bestlag")
+lags2.sd$Piece <- 2
+
+lags.sd <- rbind(lags1.sd,lags2.sd)
+lags.sd$Piece <- factor(lags.sd$Piece, ordered = TRUE)
+lags.sd
+
+thm <- theme(panel.grid.major.x = element_line(),
+             panel.grid.major.y = element_line(),
+             plot.title = element_text(size=15, vjust=.5, hjust = .5),
+             axis.title = element_text(size=13),
+             axis.title.y = element_text(vjust=1),
+             axis.title.x = element_text(vjust=1),
+             axis.text = element_text(size=9, colour="black"),
+             #legend.title = element_text(size=16, hjust = .5),
+             legend.text = element_text(size=9),
+             legend.key.size = unit(0.5, "cm"),
+             legend.background = element_rect(color = "black"),
+             legend.position = "right",
+             strip.text = element_text(size = 12))
+
+lags_sd <- ggplot(lags.sd, aes(x=Trial, y=SD_bestlag, color=Piece)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(y = "SD of best time lag", color = "Piece") +
+  ggtitle("St. Dev. of Maximum Time Lags") +
+  scale_color_manual(values=c('orange','darkblue')) +
+  #scale_color_manual(values = c("black", "gray"), labels=c("Trial 1", "Trial 8")) +
+  thm
+lags_sd
+
+ggsave(paste(imageDirectory,"lags_sd.jpg",sep=''),lags_sd)
 ```
 
 
@@ -688,8 +730,9 @@ Save data frames as .rda files
 
 ```{r}
 ## SAVE DATA
-save.image("/Users/lucas/Desktop/Following/ANALYSIS/Manuscript/following.Rdata")
-save(dfs, file = "following.rda")
+save.image("/Users/lucas/Desktop/Following/ANALYSIS/Stats/following.Rdata")
+save(dfs, file = "following_dfs.rda")
+save(plots, file = "following_plots.rda")
 
 #save(following, file=paste("following_",piece,"_",section,".rda",sep=''))
 #save(long_following, file = paste("long_following_",piece,"_",section,".rda",sep=''))

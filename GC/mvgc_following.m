@@ -19,7 +19,7 @@ addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 % Did you just run the MASTER_preprocess_following.m script?
 carry_over = 0; % 0 for no, 1 for yes
 plotting_flag = 0; % Plot?
-save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
+save_flag = 0; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
 % ALERT! This will overwrite existing files with the same save name!
 
 switch carry_over % Case 0 --> define variables:

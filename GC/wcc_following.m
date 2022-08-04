@@ -93,6 +93,8 @@ for participanti = 1:numel(D) % Loop through all participants
         %% Run CC
 
         cor_vals = zeros(size(X,3),1); % num_trials x num_participants
+        cor_vals_pos = zeros(size(X,3),1);
+        cor_vals_neg = zeros(size(X,3),1);
         maxlag_index = zeros(size(X,3),1); % 
         cor_vals0 = zeros(size(X,3),1);
 
@@ -101,13 +103,23 @@ for participanti = 1:numel(D) % Loop through all participants
                 case 'wcc'
                     A = X(1,:,triali); % Recording to performance
                     B = X(2,:,triali); % Performance to recording
+                    [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
 
                     % Max lag
-                    [wcc,l,t] = corrgram(A,B,maxlag,window,overlap);
                     cor_vals(triali,1) = max(abs(wcc),[],'all');
-
                     [indexR,indexC] = find(abs(wcc)==max(abs(wcc),[],'all')); % find index of max CC value
                     maxlag_index(triali,1) = indexR;
+
+                    % Signed - positive
+                    cor_vals_pos(triali,1) = max(wcc,[],'all');
+                    [indexR_pos,indexC_pos] = find(wcc==max(wcc,[],'all'));
+                    poslag_index(triali,1) = indexR_pos;
+
+                    % Signed - negative
+                    cor_vals_neg(triali,1) = min(wcc,[],'all');
+                    [indexR_neg,indexC_neg] = find(wcc==min(wcc,[],'all'));
+                    neglag_index(triali,1) = indexR_neg;
+
                     %cor_vals = max(abs(corrgram(A,B, maxlag, window, overlap)),[],'all');
 
                     % 0 lag
@@ -129,10 +141,14 @@ for participanti = 1:numel(D) % Loop through all participants
         cc_label = ['cc_' + string(ds_target) + method_flag];
         cc_label0 = ['cc0_' + string(ds_target) + method_flag];
         cc_label_lag = ['lag_' + string(ds_target) + method_flag];
+        cc_label_lagpos = ['lag_' + string(ds_target) + method_flag];
+        cc_label_lagneg = ['lag_' + string(ds_target) + method_flag];
 
         D{participanti}.(cc_label) = cor_vals;
         D{participanti}.(cc_label0) = cor_vals0;
         D{participanti}.(cc_label_lag) = maxlag_index;
+        D{participanti}.(cc_label_lagpos) = poslag_index;
+        D{participanti}.(cc_label_lagneg) = neglag_index;
         
         % Dobri's method:
         %sr = 8;
