@@ -80,7 +80,7 @@ plots_following <- function(x) {
       scale_y_continuous(limits = c(0.00, 0.17)) 
             
     
-    # ~~~~~
+    # ~~~~~~~~~~
   
     q <- x[[g+2]] # CC data from piece 1 and then piece 2
     cc <- ggplot(q, aes(x=Trial, y=CC)) +
@@ -100,11 +100,12 @@ plots_following <- function(x) {
     
     cc_participants <- cc + facet_wrap(vars(Participant))
     
-    plots[[g]] <- gc
-    plots[[g+2]] <- cc
-    plots[[g+6]] <- vi
-    plots[[g+8]] <- gc_participants
-    plots[[g+10]] <- cc_participants
+    
+    plots[[g]] <- gc # 1 and 2: GC across trials
+    plots[[g+2]] <- cc # 3 and 4: CC across trials
+    plots[[g+6]] <- vi # 7 and 8: violin plots
+    plots[[g+8]] <- gc_participants # 9 and 10: GC values separated by participant
+    plots[[g+10]] <- cc_participants # 11 and 12: CC values separated by participant
     
   } # (end of for loop)
   
@@ -127,7 +128,8 @@ plots_following <- function(x) {
     thm
   plots[[5]] <- gcs
   
-  # ~~~~~
+  
+  # ~~~~~~~~~~
   s <- x[[6]] # CC values for both pieces
   ccs <- ggplot(s, aes(x=Trial, y=CC, color = Piece)) + #group_by()=1)) +
     geom_smooth(method='lm', se=FALSE, col='red', size=2) +
@@ -141,7 +143,7 @@ plots_following <- function(x) {
     #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
     #scale_fill_brewer("Group", palette = "Dark2") +
     #scale_y_continuous(limits = c(0.00, 0.2)) +
-    coord_cartesian(ylim = c(0.82, 0.89)) +
+    #coord_cartesian(ylim = c(0.82, 0.89)) +
     thm
   plots[[6]] <- ccs
   
@@ -158,7 +160,7 @@ plots_following <- function(x) {
     #scale_colour_manual(wes_palette("Darjeeling1",43,type=("continuous"))) +
     #scale_fill_brewer("Group", palette = "Dark2") +
     #scale_y_continuous(limits = c(0.82, 0.89)) +
-    coord_cartesian(ylim = c(0.82, 0.89)) +
+    #coord_cartesian(ylim = c(0.82, 0.89)) +
     thm
   plots[[13]] <- ccs_0
   
@@ -193,8 +195,8 @@ plots_following <- function(x) {
     thm
   plots[[14]] <- ccs_l
   
+  # Plot 5: GC for both pieces
+  # Plot 6: CC for both pieces
   return(plots)
 }
-
-
 

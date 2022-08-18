@@ -6,7 +6,6 @@ output:
   html_document: default
   pdf_document: 
     keep_tex: yes
-  #keep_tex: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -20,7 +19,7 @@ knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats/"
 
 ```{r load, message=FALSE, results='hide'}
 setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
-imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/"
+imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/" # save images to manuscript directory where LaTeX doc can access them
 
 # necessary
 library(readr) # for reading in csv files
@@ -109,11 +108,8 @@ num_participants <- length(unique(lf_comb$Participant)) # 8
 ```
 
 
-
-Now separate by playing experience: folk players vs. non-folk players.
-
 ```{r}
-# SEPARATING BY PLAYING EXPERIENCE
+# SEPARATING BY PLAYING EXPERIENCE - folk players vs. non-folk players
 
 # if(piece == "Danny Boy") {
 #   folk <- filter(lf, Participant %in% c(4,5,8))
@@ -129,7 +125,6 @@ Now separate by playing experience: folk players vs. non-folk players.
 ```
 
 
-
 # Plots
 
 Set title based on piece and section
@@ -139,9 +134,9 @@ Set title based on piece and section
 piece <- "Danny Boy"
 
 # Title for whole piece
-if(piece == "Danny Boy" && section == "whole") {
+if(piece=="Danny Boy" && section=="whole") {
   plot_title <- "Piece 1: Danny Boy"
-} else {
+} else if(piece=="In The Garden" && section=="whole") {
   plot_title <- "Piece 2: In The Garden"
 }
 
@@ -205,14 +200,12 @@ Figure \ref{fig:allplots} shows
 The lag value of
 
 ```{r lags, fig.height=4, fig.width=6.5}
-source("Scripts/plots_following.R")
-plots <- plots_following(dfs)
-plots[[14]]
+#plots[[14]] # Lags for both pieces on same graph
 
 CC_combined_lags <- plots[[14]] + facet_wrap(~Piece, labeller = as_labeller(plot_names), strip.position = "top")
 CC_combined_lags
 
-ggsave(paste(imageDirectory,"lags.jpg",sep=''),CC_combined_lags)
+ggsave(paste(imageDirectory,"bestlags.jpg",sep=''),CC_combined_lags)
 ```
 
 

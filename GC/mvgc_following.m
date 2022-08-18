@@ -19,7 +19,7 @@ addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
 % Did you just run the MASTER_preprocess_following.m script?
 carry_over = 0; % 0 for no, 1 for yes
 plotting_flag = 0; % Plot?
-save_flag = 0; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
+save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
 % ALERT! This will overwrite existing files with the same save name!
 
 switch carry_over % Case 0 --> define variables:
@@ -68,7 +68,7 @@ tstat     = '';     % statistical test for MVGC:  'F' for Granger's F-test (defa
 alpha     = 0.05;   % significance level for significance test
 mhtc      = 'FDR';  % multiple hypothesis test correction (see routine 'significance')
 
-fs        = 44100;    % sample rate (Hz)
+fs        = 44100;  % sample rate (Hz)
 fres      = [];     % frequency resolution (empty for automatic calculation)
 
 seed      = 0;      % random seed (0 for unseeded)
@@ -250,7 +250,7 @@ if save_flag == 1
     % Run cc_following.m to calculate CC values
     switch 0
         case 0
-            wcc_following
+            cc_following
             CC = corvals_reconfig;
             CC0 = corvals_reconfig0;
             CC_l = corvals_reconfig_lags;
@@ -272,9 +272,12 @@ if save_flag == 1
             T = table(participant, trial, GC_r2p, GC_p2r, CC0, CC1, CC2, CC3, CC4, piece_num); % all CC lags
             T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC0','CC1','CC2','CC3','CC4','Piece'}; % without downsample column
     end
-    
-    
+
     xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'.csv'];
+    
+%     if method_flag == 'full' % defined in cc_following script
+%         xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'_full.csv'];
+%     end
     writetable(T,xlsxname);
 end
 
