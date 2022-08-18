@@ -34,6 +34,8 @@ lmer_following <- function(x) {
     M[[2]] <- lmer(CC ~ 1 + Trial + (1|Participant), data=x, REML=0)
     M[[9]] <- lmer(CC0 ~ 1 + (1|Participant), data=x, REML=0) # REDUCED
     M[[10]] <- lmer(CC0 ~ 1 + Trial + (1|Participant), data=x, REML=0)
+    M[[11]] <- lmer(CC_l ~ 1 + (1|Participant), data=x, REML=0) # REDUCED
+    M[[12]] <- lmer(CC_l ~ 1 + Trial + (1|Participant), data=x, REML=0)
     
     if (length(unique(x$Piece))==2) { # for combined pieces
       M[[3]] <- lmer(CC ~ 1 + Trial + (1|Participant), data=x, REML=0) # same again, but with all data

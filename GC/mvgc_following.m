@@ -25,7 +25,7 @@ save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, s
 switch carry_over % Case 0 --> define variables:
     case 0
         % CHANGE THIS:
-        which_piece = 1; % 1 for Danny Boy, 2 for In The Garden
+        which_piece = 2; % 1 for Danny Boy, 2 for In The Garden
 
         if which_piece == 1
             piece = 'Danny Boy';
@@ -68,7 +68,7 @@ tstat     = '';     % statistical test for MVGC:  'F' for Granger's F-test (defa
 alpha     = 0.05;   % significance level for significance test
 mhtc      = 'FDR';  % multiple hypothesis test correction (see routine 'significance')
 
-fs        = 44100;    % sample rate (Hz)
+fs        = 44100;  % sample rate (Hz)
 fres      = [];     % frequency resolution (empty for automatic calculation)
 
 seed      = 0;      % random seed (0 for unseeded)
@@ -250,13 +250,15 @@ if save_flag == 1
     % Run cc_following.m to calculate CC values
     switch 0
         case 0
-            wcc_following
+            cc_following
             CC = corvals_reconfig;
             CC0 = corvals_reconfig0;
+            CC_l = corvals_reconfig_lags;
+            % CHANGES
 
             % Save an Excel sheet of the data
-            T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, piece_num);
-            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','Piece'};
+            T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, CC_l, piece_num);
+            T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','CC_l','Piece'};
 
         case 1
             wcc_following_lags
@@ -270,9 +272,12 @@ if save_flag == 1
             T = table(participant, trial, GC_r2p, GC_p2r, CC0, CC1, CC2, CC3, CC4, piece_num); % all CC lags
             T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC0','CC1','CC2','CC3','CC4','Piece'}; % without downsample column
     end
-    
-    
+
     xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'.csv'];
+    
+%     if method_flag == 'full' % defined in cc_following script
+%         xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'_full.csv'];
+%     end
     writetable(T,xlsxname);
 end
 

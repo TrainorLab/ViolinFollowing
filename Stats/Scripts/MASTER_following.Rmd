@@ -6,21 +6,20 @@ output:
   html_document: default
   pdf_document: 
     keep_tex: yes
-  #keep_tex: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 
-knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats")
+knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
 ```
 
 
 # Prep and load
 
 ```{r load, message=FALSE, results='hide'}
-setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats")
-imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/"
+setwd("/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
+imageDirectory <- "/Users/lucas/Desktop/Following/Manuscript/Images/" # save images to manuscript directory where LaTeX doc can access them
 
 # necessary
 library(readr) # for reading in csv files
@@ -36,6 +35,7 @@ library(ggpubr) # for arranging plots
 library(grid)
 library(effectsize)
 library(r2glmm)
+library(rlang)
 
 # possibly not necessary?
 # library(lsr)
@@ -59,7 +59,7 @@ filename2 <- paste("following_",piece2,"_",section,".csv",sep='')
 
 following1 <- read.csv(filename1, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
 following2 <- read.csv(filename2, header = TRUE, na.strings = c("","NA")) # E.g. "following_Danny Boy_22_1.csv"
-#following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
+#following1_lag0 <- read.csv("following_Danny Boy_whole_lag0.csv", header = TRUE, na.strings = %c("","NA"))
 #following2_lag0 <- read.csv("following_In The Garden_whole_lag0.csv", header = TRUE, na.strings = c("","NA"))
 
 #ccorr <- read.csv("ccorr.csv", header = TRUE, na.strings = c("", "NA"))
@@ -89,16 +89,8 @@ Recording to performance direction = 1
 Performance to recording direction = 2
 
 ```{r}
-# Make Trial and Participant factors
-## This is necessary for reshaping the data correctly
-# following1$Trial <- factor(following1$Trial, ordered = TRUE)
-# following1$Participant <- factor(following1$Participant, ordered = FALSE)
-# 
-# following2$Trial <- factor(following2$Trial, ordered = TRUE)
-# following2$Participant <- factor(following2$Participant, ordered = FALSE)
-
 #following1$CC0 <- following1_lag0$CC
-#%following2$CC0 <- following2_lag0$CC
+#following2$CC0 <- following2_lag0$CC
 
 source("Scripts/prep_following.R")
 dfs <- prep_following(following1, following2) # list of 3 items: lf1, lf2, lf_comb
@@ -116,11 +108,8 @@ num_participants <- length(unique(lf_comb$Participant)) # 8
 ```
 
 
-
-Now separate by playing experience: folk players vs. non-folk players.
-
 ```{r}
-# SEPARATING BY PLAYING EXPERIENCE
+# SEPARATING BY PLAYING EXPERIENCE - folk players vs. non-folk players
 
 # if(piece == "Danny Boy") {
 #   folk <- filter(lf, Participant %in% c(4,5,8))
@@ -136,7 +125,6 @@ Now separate by playing experience: folk players vs. non-folk players.
 ```
 
 
-
 # Plots
 
 Set title based on piece and section
@@ -146,28 +134,21 @@ Set title based on piece and section
 piece <- "Danny Boy"
 
 # Title for whole piece
-if(piece == "Danny Boy" && section == "whole") {
+if(piece=="Danny Boy" && section=="whole") {
   plot_title <- "Piece 1: Danny Boy"
-} else {
+} else if(piece=="In The Garden" && section=="whole") {
   plot_title <- "Piece 2: In The Garden"
 }
 
-# Auto
-#plot_title1 <- paste(piece," - ","section ",section,sep = '')
-#plot_title <- paste("Section ",section,sep = '')
-# Manual
-#plot_title <- "In The Garden - 'by ear' players"
-
 # Make plots
 source("Scripts/plots_following.R")
-#source("Scripts/multiplot.R")
 plots <- plots_following(dfs)
 ```
 
 
 ## GC values by direction
 
-```{r violin, fig.height=4.5, fig.width=7}
+```{r violin, fig.height=4.5, fig.width=6.5}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
@@ -182,7 +163,7 @@ Figure \ref{fig:violin} shows.....
 
 ## GC and CC by trial
 
-```{r GC_combined, fig.height=4.5, fig.width=7}
+```{r GC_combined, fig.height=4.5, fig.width=6.5}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
@@ -197,28 +178,75 @@ plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
 CC_combined <- plots[[6]] + facet_wrap(~Piece, labeller = as_labeller(plot_names))
-
 CC_combined_0lag <- plots[[13]] + facet_wrap(~Piece, labeller = as_labeller(plot_names))
 
 CC_all <- ggarrange(CC_combined, CC_combined_0lag, ncol = 1,
                        labels = c('A','B'))
 #  theme(legend.position = "none")
-
 CC_all
 
 #mplot <- multiplot(plotlist=plots,layout=matrix(c(1,2),nrow=1,byrow=TRUE))
-
 ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
+
+#plots[[9]] # plots of GC values for each participant, Piece 1
+#plots[[10]] # plots of GC values for each participant, Piece 2
+#plots[[6]] # CC values over trials, separated by piece
 ```
 
 Figure \ref{fig:allplots} shows
 
-### GC for individual participants
 
-```{r gc_parts, eval=FALSE, fig.height=5.5, fig.width=8}
-plots[[9]] # plots of GC values for each participant, Piece 1
-plots[[10]] # plots of GC values for each participant, Piece 2
-plots[[6]]
+## Best lags by trials
+The lag value of
+
+```{r lags, fig.height=4, fig.width=6.5}
+#plots[[14]] # Lags for both pieces on same graph
+
+CC_combined_lags <- plots[[14]] + facet_wrap(~Piece, labeller = as_labeller(plot_names), strip.position = "top")
+CC_combined_lags
+
+ggsave(paste(imageDirectory,"bestlags.jpg",sep=''),CC_combined_lags)
+```
+
+
+```{r lags_sd, fig.height=4, fig.width=6.5}
+lags1.sd <- data.frame(1:8,tapply(cc1$CC_l, cc1$Trial, sd))
+names(lags1.sd) <- c("Trial","SD_bestlag")
+lags1.sd$Piece <- 1
+
+lags2.sd <- data.frame(1:8,tapply(cc2$CC_l, cc2$Trial, sd))
+names(lags2.sd) <- c("Trial","SD_bestlag")
+lags2.sd$Piece <- 2
+
+lags.sd <- rbind(lags1.sd,lags2.sd)
+lags.sd$Piece <- factor(lags.sd$Piece, ordered = TRUE)
+lags.sd
+
+thm <- theme(panel.grid.major.x = element_line(),
+             panel.grid.major.y = element_line(),
+             plot.title = element_text(size=15, vjust=.5, hjust = .5),
+             axis.title = element_text(size=13),
+             axis.title.y = element_text(vjust=1),
+             axis.title.x = element_text(vjust=1),
+             axis.text = element_text(size=9, colour="black"),
+             #legend.title = element_text(size=16, hjust = .5),
+             legend.text = element_text(size=9),
+             legend.key.size = unit(0.5, "cm"),
+             legend.background = element_rect(color = "black"),
+             legend.position = "right",
+             strip.text = element_text(size = 12))
+
+lags_sd <- ggplot(lags.sd, aes(x=Trial, y=SD_bestlag, color=Piece)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(y = "SD of best time lag", color = "Piece") +
+  ggtitle("St. Dev. of Maximum Time Lags") +
+  scale_color_manual(values=c('orange','darkblue')) +
+  #scale_color_manual(values = c("black", "gray"), labels=c("Trial 1", "Trial 8")) +
+  thm
+lags_sd
+
+ggsave(paste(imageDirectory,"lags_sd.jpg",sep=''),lags_sd)
 ```
 
 
@@ -387,6 +415,17 @@ DBmcc_pval <- round(anova.cc1$`Pr(>Chisq)`[2], digits = 3)
 ITGmcc_beta <- round(fixef(mod.cc2[[2]])[2], digits = 3)
 ITGmcc_rsq <- round(r2beta(mod.cc2[[2]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
 ITGmcc_pval <- round(anova.cc2$`Pr(>Chisq)`[2], digits = 3)
+```
+
+
+Best lags:
+
+```{r}
+anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
+anova.cc1.L
+
+anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
+anova.cc2.L
 ```
 
 
@@ -684,8 +723,9 @@ Save data frames as .rda files
 
 ```{r}
 ## SAVE DATA
-save.image("/Users/lucas/Desktop/Following/ANALYSIS/Manuscript/following.Rdata")
-save(dfs, file = "following.rda")
+save.image("/Users/lucas/Desktop/Following/ANALYSIS/Stats/following.Rdata")
+save(dfs, file = "following_dfs.rda")
+save(plots, file = "following_plots.rda")
 
 #save(following, file=paste("following_",piece,"_",section,".rda",sep=''))
 #save(long_following, file = paste("long_following_",piece,"_",section,".rda",sep=''))
