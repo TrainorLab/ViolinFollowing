@@ -10,7 +10,7 @@
 clear variables
 
 % ~~~ CHANGE THESE ~~~
-which_piece = 1; % 1 for DB, 2 for ITG
+which_piece = 2; % 1 for DB, 2 for ITG
 section = 'whole';
 
 if which_piece == 1

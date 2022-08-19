@@ -148,7 +148,7 @@ plots <- plots_following(dfs)
 
 ## GC values by direction
 
-```{r violin, fig.height=4.5, fig.width=6.5}
+```{r violin, fig.height=4.5, fig.width=6.5, fig.cap="Violin plots for both pieces showing differences in GC values across both directions."}
 violin_all <- ggarrange(plots[[7]], plots[[8]],
           common.legend = TRUE,
           legend = "bottom",
@@ -158,12 +158,10 @@ violin_all
 ggsave(paste(imageDirectory,"violin.jpg", sep=''), violin_all)
 ```
 
-Figure \ref{fig:violin} shows.....
-
 
 ## GC and CC by trial
 
-```{r GC_combined, fig.height=4.5, fig.width=6.5}
+```{r GC_combined, fig.height=4.5, fig.width=6}
 plot_names <- c('1' = "Danny Boy",
                 '2' = "In The Garden")
 
@@ -193,16 +191,18 @@ ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
 #plots[[6]] # CC values over trials, separated by piece
 ```
 
-Figure \ref{fig:allplots} shows
-
 
 ## Best lags by trials
-The lag value of
 
-```{r lags, fig.height=4, fig.width=6.5}
+```{r lags, fig.height=4, fig.width=6.5, fig.cap="Means of all participants' best time lags across trials for both pieces."}
+#source("Scripts/plots_following.R")
+#plots <- plots_following(dfs)
 #plots[[14]] # Lags for both pieces on same graph
 
-CC_combined_lags <- plots[[14]] + facet_wrap(~Piece, labeller = as_labeller(plot_names), strip.position = "top")
+CC_combined_lags <- plots[[14]] + 
+  facet_wrap(vars(Piece), labeller = as_labeller(plot_names), strip.position = "top") + 
+  ggtitle("Piece") +
+  scale_color_manual(values=c('darkorchid4','springgreen4'))
 CC_combined_lags
 
 ggsave(paste(imageDirectory,"bestlags.jpg",sep=''),CC_combined_lags)
@@ -220,7 +220,6 @@ lags2.sd$Piece <- 2
 
 lags.sd <- rbind(lags1.sd,lags2.sd)
 lags.sd$Piece <- factor(lags.sd$Piece, ordered = TRUE)
-lags.sd
 
 thm <- theme(panel.grid.major.x = element_line(),
              panel.grid.major.y = element_line(),
@@ -244,7 +243,7 @@ lags_sd <- ggplot(lags.sd, aes(x=Trial, y=SD_bestlag, color=Piece)) +
   scale_color_manual(values=c('orange','darkblue')) +
   #scale_color_manual(values = c("black", "gray"), labels=c("Trial 1", "Trial 8")) +
   thm
-lags_sd
+
 
 ggsave(paste(imageDirectory,"lags_sd.jpg",sep=''),lags_sd)
 ```
@@ -286,16 +285,15 @@ ITGtt_pval <- t.test_piece2$p.value
 
 ## Changes in GC and CC across trials
 
-### Linear mixed effects mdodels
+### Linear mixed effects models
 - lmer() function
 - Automatically uses Type III SS
 
-r2beta: r2beta Compute R Squared for Mixed Models
-t-value: slope is significantly NOT zero
-Estimate: slope of model, effect size
-chi squared - compares error
-
-(What does it mean for fixed effects to be correlated?)
+r2beta: r2beta Compute R Squared for Mixed Models \
+t-value: slope is significantly NOT zero \
+Estimate: slope of model, effect size \
+chi squared - compares error \
+Correlated fixed effects?
 
 
 ```{r}
@@ -323,7 +321,7 @@ mod.cc2 <- lmer_following(cc2)
 mod.ccc <- lmer_following(cc_comb)
 ```
 
-### Linear models for Granger causality
+#### Linear models for Granger causality
 
 ```{r}
 #mod.gc1[[2]]
@@ -346,8 +344,6 @@ ITGm_beta <- round(fixef(mod.gc2[[2]])[2], digits=3)
 ITGm_rsq <- round(r2beta(mod.gc2[[2]], method = 'kr')[[7]][1], digits=3) # or 'nsj'
 ITGm_pval <- round(anova.gc2$`Pr(>Chisq)`[2], digits=3)
 ```
-
-#### Results
 
 ```{r}
 print(paste('Danny Boy: beta = ',DBm_beta,' R-squared = ',DBm_rsq,' p-value = ',DBm_pval))
@@ -392,7 +388,7 @@ print(paste('ITG: beta = ',ITGm_beta,' R-squared = ',ITGm_rsq,' p-value = ',ITGm
 ```
 
 
-### Linear models for Cross-correlation - ALL LAGS
+#### Linear models for Cross-correlation (full, not windowed)
 
 ```{r}
 # Linear mixed model fit by max likelihood
@@ -417,20 +413,6 @@ ITGmcc_rsq <- round(r2beta(mod.cc2[[2]], method = 'kr')[[7]][1], digits = 3) # o
 ITGmcc_pval <- round(anova.cc2$`Pr(>Chisq)`[2], digits = 3)
 ```
 
-
-Best lags:
-
-```{r}
-anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
-anova.cc1.L
-
-anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
-anova.cc2.L
-```
-
-
-#### Results
-
 ```{r}
 print(paste('Danny Boy: beta = ',DBmcc_beta,' R-squared = ',DBmcc_rsq,' p-value = ',DBmcc_pval))
 
@@ -438,7 +420,34 @@ print(paste('In The Garden: beta = ',ITGmcc_beta,' R-squared = ',ITGmcc_rsq,' p-
 ```
 
 
-### Linear models for Cross-correlation - 0 LAG (synchrony)
+#### Best lags:
+
+```{r}
+# ANOVAs between full (2) vs. reduced (1) models for best lags:
+anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
+anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
+
+# Define variables to report in results
+DBmcc_beta.L <- round(fixef(mod.cc1[[12]])[2], digits = 3)
+DBmcc_rsq.L <- round(r2beta(mod.cc1[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
+DBmcc_pval.L <- round(anova.cc1.L$`Pr(>Chisq)`[2], digits = 3)
+
+ITGmcc_beta.L <- round(fixef(mod.cc2[[12]])[2], digits = 3)
+ITGmcc_rsq.L <- round(r2beta(mod.cc2[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
+ITGmcc_pval.L <- round(anova.cc2.L$`Pr(>Chisq)`[2], digits = 3)
+
+#### Results
+```
+
+
+```{r}
+print(paste('Danny Boy: beta = ',DBmcc_beta.L,', R-squared = ',DBmcc_rsq.L,', p-value = ',DBmcc_pval.L))
+
+print(paste('In The Garden: beta = ',ITGmcc_beta.L,', R-squared = ',ITGmcc_rsq.L,', p-value = ',ITGmcc_pval.L))
+```
+
+
+#### Linear models for Cross-correlation - 0 LAG (synchrony)
 
 ```{r}
 # Linear mixed model fit by max likelihood
@@ -462,8 +471,6 @@ ITGmcc0_beta <- round(fixef(mod.cc2[[10]])[2], digits = 3)
 ITGmcc0_rsq <- round(r2beta(mod.cc2[[10]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
 ITGmcc0_pval <- round(anova.cc02$`Pr(>Chisq)`[2], digits = 3)
 ```
-
-#### Results
 
 ```{r}
 print(paste('Danny Boy: beta = ',DBmcc0_beta,' R-squared = ',DBmcc0_rsq,' p-value = ',DBmcc0_pval))
@@ -528,7 +535,7 @@ print(paste('In The Garden: F(',ITGaov_df,',',ITGaov_dfres,') = ',ITGaov_F,' wit
 
 ### Trend analysis of Cross-correlation
 
-#### ALL LAGS
+#### Using best lag, full function (not windowed)
 
 ```{r}
 aov.cc1 <- aov(CC ~ Trial, data = following1) # piece 1
@@ -613,7 +620,7 @@ print(paste('In The Garden: F(',ITGaovcc0L_df,',',ITGaovcc0L_dfres,') = ',ITGaov
 
 #### Danny Boy
 
-```{r}
+```{r, include=FALSE}
 plot(following1$Trial, following1$CC)
 x <- as.integer(following1$Trial)
 y <- following1$CC
@@ -624,7 +631,7 @@ summary(log.fit)
 
 #### In The Garden
 
-```{r}
+```{r, include=FALSE}
 plot(following2$Trial, following2$CC)
 x <- as.integer(following2$Trial)
 y <- following2$CC
