@@ -74,12 +74,16 @@ following2 <- read.csv(filename2, header = TRUE, na.strings = c("","NA")) # E.g.
 
 ```
 
-Any NA's?
+No NA's found
 
 ```{r}
 # Are there any NAs?
-print(colSums(is.na(following1)))
-print(colSums(is.na(following2)))
+# if colSums(is.na(following1)) ~= 0:
+#   print('No NAs found')
+# else:
+#   print('There are NAs for piece 1')
+# 
+# print(colSums(is.na(following2)))
 ```
 ### Pre-process
 
@@ -89,11 +93,8 @@ Recording to performance direction = 1
 Performance to recording direction = 2
 
 ```{r}
-#following1$CC0 <- following1_lag0$CC
-#following2$CC0 <- following2_lag0$CC
-
 source("Scripts/prep_following.R")
-dfs <- prep_following(following1, following2) # list of 3 items: lf1, lf2, lf_comb
+dfs <- prep_following(following1, following2) # list of 6 items: lf1, lf2, cc1, cc2, lf_comb, cc_comb
 
 lf1 <- dfs[[1]] # GC values in long format (both directions): piece 1
 lf2 <- dfs[[2]] # " " : piece 2
@@ -243,7 +244,7 @@ lags_sd <- ggplot(lags.sd, aes(x=Trial, y=SD_bestlag, color=Piece)) +
   scale_color_manual(values=c('orange','darkblue')) +
   #scale_color_manual(values = c("black", "gray"), labels=c("Trial 1", "Trial 8")) +
   thm
-
+lags_sd
 
 ggsave(paste(imageDirectory,"lags_sd.jpg",sep=''),lags_sd)
 ```
@@ -297,22 +298,32 @@ Correlated fixed effects?
 
 
 ```{r}
-# Prep
+## PREP
+# For lmer modeling, only use recording to performance
+lf1_r2p <- subset(lf1, Direction == "Recording to Performance")
+lf2_r2p <- subset(lf2, Direction == "Recording to Performance")
+lf_comb_r2p <- subset(lf_comb, Direction == "Recording to Performance")
+
+# TRIAL MUST BE AN INTEGER FOR LINEAR MODELS
+lf1_r2p$Trial <- as.integer(lf1_r2p$Trial)
+lf2_r2p$Trial <- as.integer(lf2_r2p$Trial)
+cc1$Trial <- as.integer(cc1$Trial)
+cc2$Trial <- as.integer(cc2$Trial)
+
 source("Scripts/lmer_following.R")
 #lf1$Trial <- as.integer(lf1$Trial)
 #lf2$Trial <- as.integer(lf2$Trial)
 #lf_comb$Trial <- as.integer(lf_comb$Trial)
 #cc_comb$Trial <- as.integer(cc_comb$Trial)
 
-# For lmer modeling, only use recording to performance
-lf1_r2p <- subset(lf1, Direction == "Recording to Performance")
-lf2_r2p <- subset(lf2, Direction == "Recording to Performance")
-lf_comb_r2p <- subset(lf_comb, Direction == "Recording to Performance")
+
 
 # Each output from lmer_following is a LIST of models
 # ~~~~~ GRANGER CAUSALITY ~~~~~
 mod.gc1 <- lmer_following(lf1_r2p) # Danny Boy
+#mod.gc1 <- lmer_following(following1) # Danny Boy
 mod.gc2 <- lmer_following(lf2_r2p) # In The Garden
+#mod.gc2 <- lmer_following(following2) # In The Garden
 mod.gcc <- lmer_following(lf_comb_r2p) # both
 
 # ~~~~~ CROSS-CORRELATION ~~~~~
@@ -329,7 +340,9 @@ mod.ccc <- lmer_following(cc_comb)
 
 # ANOVAs between full (2) vs. reduced (1)
 anova.gc1 <- anova(mod.gc1[[1]], mod.gc1[[2]]) # p-value
+print(anova.gc1)
 anova.gc2 <- anova(mod.gc2[[1]], mod.gc2[[2]]) # p-value 
+print(anova.gc2)
 #summary(mod.gc1[[2]])
 # confint(mod.gc1[[2]])
 # ranef(mod.gc1[[2]]) # Trial = -0.001646372
@@ -397,7 +410,9 @@ print(paste('ITG: beta = ',ITGm_beta,' R-squared = ',ITGm_rsq,' p-value = ',ITGm
 
 # ANOVAs between full (2) vs. reduced (1)
 anova.cc1 <- anova(mod.cc1[[1]], mod.cc1[[2]]) # p-value
+print(anova.cc1)
 anova.cc2 <- anova(mod.cc2[[1]], mod.cc2[[2]]) # p-value 
+print(anova.cc2)
 #summary(mod.gc1[[2]])
 # confint(mod.gc1[[2]])
 # ranef(mod.gc1[[2]]) # Trial = -0.001646372
@@ -406,11 +421,11 @@ anova.cc2 <- anova(mod.cc2[[1]], mod.cc2[[2]]) # p-value
 # Define variables to report in results
 DBmcc_beta <- round(fixef(mod.cc1[[2]])[2], digits = 3)
 DBmcc_rsq <- round(r2beta(mod.cc1[[2]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
-DBmcc_pval <- round(anova.cc1$`Pr(>Chisq)`[2], digits = 3)
+DBmcc_pval <- round(anova.cc1$`Pr(>Chisq)`[2], digits = 5)
 
 ITGmcc_beta <- round(fixef(mod.cc2[[2]])[2], digits = 3)
 ITGmcc_rsq <- round(r2beta(mod.cc2[[2]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
-ITGmcc_pval <- round(anova.cc2$`Pr(>Chisq)`[2], digits = 3)
+ITGmcc_pval <- round(anova.cc2$`Pr(>Chisq)`[2], digits = 5)
 ```
 
 ```{r}
@@ -420,7 +435,7 @@ print(paste('In The Garden: beta = ',ITGmcc_beta,' R-squared = ',ITGmcc_rsq,' p-
 ```
 
 
-#### Best lags:
+#### Linear mixed models for best lags across trials:
 
 ```{r}
 # ANOVAs between full (2) vs. reduced (1) models for best lags:
@@ -456,7 +471,9 @@ print(paste('In The Garden: beta = ',ITGmcc_beta.L,', R-squared = ',ITGmcc_rsq.L
 
 # ANOVAs between full (2) vs. reduced (1)
 anova.cc01 <- anova(mod.cc1[[9]], mod.cc1[[10]]) # p-value
+print(anova.cc01)
 anova.cc02 <- anova(mod.cc2[[9]], mod.cc2[[10]]) # p-value 
+print(anova.cc02)
 #summary(mod.gc1[[2]])
 # confint(mod.gc1[[2]])
 # ranef(mod.gc1[[2]]) # Trial = -0.001646372
@@ -465,11 +482,11 @@ anova.cc02 <- anova(mod.cc2[[9]], mod.cc2[[10]]) # p-value
 # Define variables to report in results
 DBmcc0_beta <- round(fixef(mod.cc1[[10]])[2], digits=3)
 DBmcc0_rsq <- round(r2beta(mod.cc1[[10]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
-DBmcc0_pval <- round(anova.cc01$`Pr(>Chisq)`[2], digits = 3)
+DBmcc0_pval <- round(anova.cc01$`Pr(>Chisq)`[2], digits = 5)
 
 ITGmcc0_beta <- round(fixef(mod.cc2[[10]])[2], digits = 3)
 ITGmcc0_rsq <- round(r2beta(mod.cc2[[10]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
-ITGmcc0_pval <- round(anova.cc02$`Pr(>Chisq)`[2], digits = 3)
+ITGmcc0_pval <- round(anova.cc02$`Pr(>Chisq)`[2], digits = 5)
 ```
 
 ```{r}
@@ -477,6 +494,12 @@ print(paste('Danny Boy: beta = ',DBmcc0_beta,' R-squared = ',DBmcc0_rsq,' p-valu
 
 print(paste('In The Garden: beta = ',ITGmcc0_beta,' R-squared = ',ITGmcc0_rsq,' p-value = ',ITGmcc0_pval))
 ```
+
+
+
+
+
+
 
 
 ## Trend Analysis
@@ -505,8 +528,6 @@ following2$Trial <- factor(following2$Trial, ordered = TRUE) # In The Garden
 following2_last <- following2[following2$Trial %in% c(5,6,7,8), ]
 ```
 
-#### Results
-
 ```{r}
 aov.gc1 <- aov(GC_r2p ~ Trial, data = following1) # piece 1
 aov.gc2 <- aov(GC_r2p ~ Trial, data = following2) # piece 2
@@ -517,12 +538,12 @@ ITGaov_summary <- summary(aov.gc2, split = list(Trial = list(linear=1, quadratic
 DBaov_df <- 1
 DBaov_dfres <- aov.gc1$df.residual
 DBaov_F <- round(DBaov_summary[[1]][2,4], digits = 3)
-DBaov_pval <- round(DBaov_summary[[1]][2,5], digits = 3)
+DBaov_pval <- round(DBaov_summary[[1]][2,5], digits = 5)
 
 ITGaov_df <- 1
 ITGaov_dfres <- aov.gc2$df.residual
 ITGaov_F <- round(ITGaov_summary[[1]][2,4], digits = 3)
-ITGaov_pval <- round(ITGaov_summary[[1]][2,5], digits = 3)
+ITGaov_pval <- round(ITGaov_summary[[1]][2,5], digits = 5)
 
 ```
 
@@ -535,7 +556,7 @@ print(paste('In The Garden: F(',ITGaov_df,',',ITGaov_dfres,') = ',ITGaov_F,' wit
 
 ### Trend analysis of Cross-correlation
 
-#### Using best lag, full function (not windowed)
+#### Similarity - CC (full function, not windowed) using best lag
 
 ```{r}
 aov.cc1 <- aov(CC ~ Trial, data = following1) # piece 1
@@ -547,12 +568,12 @@ ITGaovcc_summary <- summary(aov.cc2, split = list(Trial = list(linear=1, quadrat
 DBaovcc_df <- 1
 DBaovcc_dfres <- aov.cc1$df.residual
 DBaovcc_F <- round(DBaovcc_summary[[1]][2,4], digits = 3)
-DBaovcc_pval <- round(DBaovcc_summary[[1]][2,5], digits = 3)
+DBaovcc_pval <- round(DBaovcc_summary[[1]][2,5], digits = 5)
 
 ITGaovcc_df <- 1
 ITGaovcc_dfres <- aov.cc2$df.residual
 ITGaovcc_F <- round(ITGaovcc_summary[[1]][2,4], digits = 3)
-ITGaovcc_pval <- round(ITGaovcc_summary[[1]][2,5], digits = 3)
+ITGaovcc_pval <- round(ITGaovcc_summary[[1]][2,5], digits = 5)
 
 # not significant
 ```
@@ -563,7 +584,7 @@ print(paste('In The Garden: F(',ITGaovcc_df,',',ITGaovcc_dfres,') = ',ITGaovcc_F
 ```
 
 
-#### 0 LAG
+#### Synchrony - CC (full function, not windowed) using 0 lag
 
 ```{r}
 aov.cc01 <- aov(CC0 ~ Trial, data = following1) # piece 1
@@ -575,12 +596,12 @@ ITGaovcc0_summary <- summary(aov.cc02, split = list(Trial = list(linear=1, quadr
 DBaovcc0_df <- 1
 DBaovcc0_dfres <- aov.cc01$df.residual
 DBaovcc0_F <- round(DBaovcc0_summary[[1]][2,4], digits = 3)
-DBaovcc0_pval <- round(DBaovcc0_summary[[1]][2,5], digits = 3)
+DBaovcc0_pval <- round(DBaovcc0_summary[[1]][2,5], digits = 5)
 
 ITGaovcc0_df <- 1
 ITGaovcc0_dfres <- aov.cc02$df.residual
 ITGaovcc0_F <- round(ITGaovcc0_summary[[1]][2,4], digits = 3)
-ITGaovcc0_pval <- round(ITGaovcc0_summary[[1]][2,5], digits = 3)
+ITGaovcc0_pval <- round(ITGaovcc0_summary[[1]][2,5], digits = 5)
 ```
 
 ```{r}
@@ -601,12 +622,12 @@ ITGaovcc0L_summary <- summary(aov.cc02L, split = list(Trial = list(linear=1, qua
 DBaovcc0L_df <- 1
 DBaovcc0L_dfres <- aov.cc01L$df.residual
 DBaovcc0L_F <- round(DBaovcc0L_summary[[1]][2,4], digits = 3)
-DBaovcc0L_pval <- round(DBaovcc0L_summary[[1]][2,5], digits = 3)
+DBaovcc0L_pval <- round(DBaovcc0L_summary[[1]][2,5], digits = 5)
 
 ITGaovcc0L_df <- 1
 ITGaovcc0L_dfres <- aov.cc02L$df.residual
 ITGaovcc0L_F <- round(ITGaovcc0L_summary[[1]][2,4], digits = 3)
-ITGaovcc0L_pval <- round(ITGaovcc0L_summary[[1]][2,5], digits = 3)
+ITGaovcc0L_pval <- round(ITGaovcc0L_summary[[1]][2,5], digits = 5)
 ```
 
 ```{r}

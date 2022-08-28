@@ -43,6 +43,7 @@ prep_following <- function(following1, following2) {
 
   lf_comb <- rbind(lf1, lf2)
   cc_comb <- rbind(cc1, cc2)
+  
   df <- list(lf1, lf2, cc1, cc2, lf_comb, cc_comb)
   
   # ~~~~~~~~~
