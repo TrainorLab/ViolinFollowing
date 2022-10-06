@@ -9,7 +9,8 @@ function data_z = prepare_following(X, ds_target, sf, plotting_flag)
 
 %% DOWNSAMPLE
 timePoints = (1:length(X))'./sf; % # of seconds in data
-ds_factor = round(sf/ds_target); % 
+
+ds_factor = round(sf/ds_target); % 5513
 length_data = size(X,1); % # of samples in data
 
 % Make a matrix with two columns that indexes the beginning (col. 1
@@ -19,6 +20,7 @@ windows_indices = [step min(step+ds_factor,length(X))];
 
 data_ds=zeros(size(windows_indices,1),1);
 timePoints_ds=zeros(size(windows_indices,1),1);
+pause 
 
 for w=1:size(windows_indices,1)
     % For each time point, take the mean of the two time points

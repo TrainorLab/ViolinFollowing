@@ -364,7 +364,7 @@ pre code {
 
 <h1 class="title toc-ignore">Violin following study stats - master</h1>
 <h4 class="author">Lucas Klein</h4>
-<h4 class="date">Last updated: 28 August, 2022</h4>
+<h4 class="date">Last updated: 29 August, 2022</h4>
 
 </div>
 
@@ -488,6 +488,24 @@ Correlated fixed effects?</p>
 </div>
 <div id="linear-mixed-models-for-best-lags-across-trials" class="section level4">
 <h4>Linear mixed models for best lags across trials:</h4>
+<pre><code>## Data: x
+## Models:
+## mod.cc1[[11]]: CC_l ~ 1 + (1 | Participant)
+## mod.cc1[[12]]: CC_l ~ 1 + Trial + (1 | Participant)
+##               npar    AIC    BIC  logLik deviance  Chisq Df Pr(&gt;Chisq)  
+## mod.cc1[[11]]    3 249.79 256.26 -121.89   243.79                       
+## mod.cc1[[12]]    4 248.22 256.86 -120.11   240.22 3.5693  1    0.05886 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre><code>## Data: x
+## Models:
+## mod.cc2[[11]]: CC_l ~ 1 + (1 | Participant)
+## mod.cc2[[12]]: CC_l ~ 1 + Trial + (1 | Participant)
+##               npar    AIC    BIC  logLik deviance  Chisq Df Pr(&gt;Chisq)   
+## mod.cc2[[11]]    3 145.54 152.01 -69.769   139.54                        
+## mod.cc2[[12]]    4 139.93 148.56 -65.963   131.93 7.6112  1   0.005801 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre><code>## [1] &quot;Danny Boy: beta =  -0.144 , R-squared =  0.062 , p-value =  0.059&quot;</code></pre>
 <pre><code>## [1] &quot;In The Garden: beta =  -0.103 , R-squared =  0.127 , p-value =  0.006&quot;</code></pre>
 </div>

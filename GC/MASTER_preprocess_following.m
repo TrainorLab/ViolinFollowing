@@ -54,7 +54,7 @@ D = cell(1,numel(participants));
 %% GET DATA
 % Loop through each participant's folder and find all .txt files
 % (trials)
-for p = 1:numel(participants)
+for p = 1:1 % numel(participants)
     participant_folder_perf = append(path_perf,'/',participants(p));
     participant_folder_stim = append(path_stim,'/',participants(p));
     addpath(participant_folder_perf);
@@ -64,7 +64,7 @@ for p = 1:numel(participants)
     
     DATA = cell(1,numel(filenames)); % Preallocate a temporary cell array
 
-    for trial = 1:numel(filenames)
+    for trial = 1:1 %numel(filenames)
         filename = filenames(trial).name;
         filename_stim = filenames_stim(trial).name; % CHANGED: trial=1
         X = load(filename);
@@ -126,5 +126,5 @@ end
 
 % Now take this variable D over to the mvgc toolbox for GC!
 %save(['/Users/lucas/Desktop/Following/ANALYSIS/D',piece],'D')
-save([data_folder,'D_',piece,'_',section],'D')
+%save([data_folder,'D_',piece,'_',section],'D')
 

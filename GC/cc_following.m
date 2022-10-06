@@ -93,7 +93,7 @@ for participanti = 1:numel(D) % Loop through all participants
                 %maxlag = 17; % or cycle through all m_orders using counter
                 maxlag = morders(counter); % lag is the same as the model order for gc
                 window = length(X); % # of observations in entire piece
-                overlap=0; % No overlap
+                overlap = 0; % No overlap
                 corvals = zeros(length(ds_targets), size(X,3), numel(D));
         end
 
@@ -107,18 +107,21 @@ for participanti = 1:numel(D) % Loop through all participants
         cor_vals0 = zeros(size(X,3),1);
 
         for triali = 1:size(X,3) % Loop through trials
-            A = X(1,:,triali); % Recording to performance
-            B = X(2,:,triali); % Performance to recording
+            A = X(1,:,triali); % Performance
+            B = X(2,:,triali); % Recording (same for every trial)
             switch method_flag
                 case 'full'
-                    [cc,lags] = xcorr(A,B,maxlag,'normalized');
+                    [cc,lags] = xcorr(A,B,maxlag,'normalized'); % 1x21 [-10:1:10] of pos CC values between [0,1]
                     %[cc_xcov,lags_xcov] = xcov(A,B,maxlag,'normalized');
                     stem(lags,cc)
                     
                     cor_vals(triali,1) = max(abs(cc),[],'all');
-                    [indexR,indexC] = find(abs(cc)==max(abs(cc),[],'all')); % find index of max CC value
+                    [indexR,indexC] = find(abs(cc)==max(abs(cc),[],'all')); % find index of max CC value (pos or neg)
                     maxlag_index(triali,1) = indexC-(maxlag+1); % re-center lag values about 0
+                    % This is now a column of optimal lags for all 8 trials
 
+
+                    %% ZERO LAG
                     [cc0,lags0] = xcorr(A,B,0,'normalized'); % only one value, so no max needed
                     cor_vals0(triali,1) = cc0;
                     
@@ -130,19 +133,9 @@ for participanti = 1:numel(D) % Loop through all participants
                     [indexR,indexC] = find(abs(wcc)==max(abs(wcc),[],'all')); % find index of max CC value
                     maxlag_index(triali,1) = indexR;
 
-                    % Signed - positive
-                    cor_vals_pos(triali,1) = max(wcc,[],'all');
-                    [indexR_pos,indexC_pos] = find(wcc==max(wcc,[],'all'));
-                    poslag_index(triali,1) = indexR_pos;
-
-                    % Signed - negative
-                    cor_vals_neg(triali,1) = min(wcc,[],'all');
-                    [indexR_neg,indexC_neg] = find(wcc==min(wcc,[],'all'));
-                    neglag_index(triali,1) = indexR_neg;
-
                     %cor_vals = max(abs(corrgram(A,B, maxlag, window, overlap)),[],'all');
 
-                    % 0 lag
+                    %% Zero lag
                     [wcc0,l0,t0] = corrgram(A,B,maxlag0,window,overlap);
                     cor_vals0(triali,1) = max(abs(wcc0),[],'all');
 

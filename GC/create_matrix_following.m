@@ -22,7 +22,7 @@ end
 
 minVal = min(trialLengths); % Find the shortest trial
 
-nvars = size(DATA{1}.(ds_label),3); % (all trials have same # of vars)
+nvars = size(DATA{1}.(ds_label),3);
 nobs = minVal;
 ntrials = length(DATA);
 

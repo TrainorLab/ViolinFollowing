@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 knitr::opts_knit$set(root.dir = "/Users/lucas/Desktop/Following/ANALYSIS/Stats/")
 ```
 
-
 # Prep and load
 
 ```{r load, message=FALSE, results='hide'}
@@ -85,12 +84,12 @@ No NA's found
 # 
 # print(colSums(is.na(following2)))
 ```
+
 ### Pre-process
 
 Both dataframes are currently in wide format, with a column for cross-correlation values. This removes the CC column and creates long-formatted dataframes for both pieces, including a combined version of both together. Then outputs these three dataframes in a list.
 
-Recording to performance direction = 1
-Performance to recording direction = 2
+Recording to performance direction = 1 Performance to recording direction = 2
 
 ```{r}
 source("Scripts/prep_following.R")
@@ -108,7 +107,6 @@ cc_comb <-  dfs[[6]] # CC values for both pieces
 num_participants <- length(unique(lf_comb$Participant)) # 8
 ```
 
-
 ```{r}
 # SEPARATING BY PLAYING EXPERIENCE - folk players vs. non-folk players
 
@@ -124,7 +122,6 @@ num_participants <- length(unique(lf_comb$Participant)) # 8
 #   nonear <- filter(lf, Participant %in% c(7,8))
 # }
 ```
-
 
 # Plots
 
@@ -146,7 +143,6 @@ source("Scripts/plots_following.R")
 plots <- plots_following(dfs)
 ```
 
-
 ## GC values by direction
 
 ```{r violin, fig.height=4.5, fig.width=6.5, fig.cap="Violin plots for both pieces showing differences in GC values across both directions."}
@@ -159,7 +155,6 @@ violin_all
 ggsave(paste(imageDirectory,"violin.jpg", sep=''), violin_all)
 ```
 
-
 ## GC and CC by trial
 
 ```{r GC_combined, fig.height=4.5, fig.width=6}
@@ -170,7 +165,6 @@ GC_combined <- plots[[5]] + facet_wrap(~Piece, labeller = as_labeller(plot_names
 GC_combined
 ggsave(paste(imageDirectory,"GC_combined.jpg",sep=''),GC_combined)
 ```
-
 
 ```{r CC_all, fig.height=7, fig.width=6.5}
 plot_names <- c('1' = "Danny Boy",
@@ -192,8 +186,7 @@ ggsave(paste(imageDirectory,"CC_all.jpg",sep=''),CC_all)
 #plots[[6]] # CC values over trials, separated by piece
 ```
 
-
-## Best lags by trials
+## Best lags by trial
 
 ```{r lags, fig.height=4, fig.width=6.5, fig.cap="Means of all participants' best time lags across trials for both pieces."}
 #source("Scripts/plots_following.R")
@@ -208,7 +201,6 @@ CC_combined_lags
 
 ggsave(paste(imageDirectory,"bestlags.jpg",sep=''),CC_combined_lags)
 ```
-
 
 ```{r lags_sd, fig.height=4, fig.width=6.5}
 lags1.sd <- data.frame(1:8,tapply(cc1$CC_l, cc1$Trial, sd))
@@ -249,7 +241,6 @@ lags_sd
 ggsave(paste(imageDirectory,"lags_sd.jpg",sep=''),lags_sd)
 ```
 
-
 # Stats
 
 ## Information flow direction
@@ -281,21 +272,18 @@ ITGtt_stat <- round(t.test_piece2$statistic, digits = 3)
 ITGtt_pval <- t.test_piece2$p.value
 ```
 
-
-
-
 ## Changes in GC and CC across trials
 
 ### Linear mixed effects models
-- lmer() function
-- Automatically uses Type III SS
 
-r2beta: r2beta Compute R Squared for Mixed Models \
-t-value: slope is significantly NOT zero \
-Estimate: slope of model, effect size \
-chi squared - compares error \
+-   lmer() function
+-   Automatically uses Type III SS
+
+r2beta: r2beta Compute R Squared for Mixed Models\
+t-value: slope is significantly NOT zero\
+Estimate: slope of model, effect size\
+chi squared - compares error\
 Correlated fixed effects?
-
 
 ```{r}
 ## PREP
@@ -364,7 +352,6 @@ print(paste('Danny Boy: beta = ',DBm_beta,' R-squared = ',DBm_rsq,' p-value = ',
 print(paste('ITG: beta = ',ITGm_beta,' R-squared = ',ITGm_rsq,' p-value = ',ITGm_pval))
 ```
 
-
 ```{r, eval=FALSE}
 # Dobri's method:
 # First, run anova on all models to find the best one
@@ -383,7 +370,6 @@ print(paste('ITG: beta = ',ITGm_beta,' R-squared = ',ITGm_rsq,' p-value = ',ITGm
 #Anova(model, type=3)
 ```
 
-
 ```{r}
 # ~~~~~ Pieces combined ~~~~~
 #anova(mod.gcc[[7]])
@@ -399,7 +385,6 @@ print(paste('ITG: beta = ',ITGm_beta,' R-squared = ',ITGm_rsq,' p-value = ',ITGm
 #ranef(mod.gcc[[7]]) # Trial = -0.001646372
 #anova(mod.gcc[[7]])
 ```
-
 
 #### Linear models for Cross-correlation (full, not windowed)
 
@@ -434,13 +419,14 @@ print(paste('Danny Boy: beta = ',DBmcc_beta,' R-squared = ',DBmcc_rsq,' p-value 
 print(paste('In The Garden: beta = ',ITGmcc_beta,' R-squared = ',ITGmcc_rsq,' p-value = ',ITGmcc_pval))
 ```
 
-
 #### Linear mixed models for best lags across trials:
 
 ```{r}
 # ANOVAs between full (2) vs. reduced (1) models for best lags:
 anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
 anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
+print(anova.cc1.L)
+print(anova.cc2.L)
 
 # Define variables to report in results
 DBmcc_beta.L <- round(fixef(mod.cc1[[12]])[2], digits = 3)
@@ -450,17 +436,13 @@ DBmcc_pval.L <- round(anova.cc1.L$`Pr(>Chisq)`[2], digits = 3)
 ITGmcc_beta.L <- round(fixef(mod.cc2[[12]])[2], digits = 3)
 ITGmcc_rsq.L <- round(r2beta(mod.cc2[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
 ITGmcc_pval.L <- round(anova.cc2.L$`Pr(>Chisq)`[2], digits = 3)
-
-#### Results
 ```
-
 
 ```{r}
 print(paste('Danny Boy: beta = ',DBmcc_beta.L,', R-squared = ',DBmcc_rsq.L,', p-value = ',DBmcc_pval.L))
 
 print(paste('In The Garden: beta = ',ITGmcc_beta.L,', R-squared = ',ITGmcc_rsq.L,', p-value = ',ITGmcc_pval.L))
 ```
-
 
 #### Linear models for Cross-correlation - 0 LAG (synchrony)
 
@@ -495,20 +477,11 @@ print(paste('Danny Boy: beta = ',DBmcc0_beta,' R-squared = ',DBmcc0_rsq,' p-valu
 print(paste('In The Garden: beta = ',ITGmcc0_beta,' R-squared = ',ITGmcc0_rsq,' p-value = ',ITGmcc0_pval))
 ```
 
-
-
-
-
-
-
-
 ## Trend Analysis
 
-Calculating linear contrasts (comparisons) among levels of a quantitative (ordered) factor
-Assumes equal subjects in each group
+Calculating linear contrasts (comparisons) among levels of a quantitative (ordered) factor Assumes equal subjects in each group
 
 Trend analysis partitions the sum of squares for the model into portions due to linear trend, quadratic trend, cubic trend, etc. If there are k groups it is possible to look at up to k - 1 trends, although often researchers combine together all trends above quadratic or cubic.
-
 
 ### Trend analysis of Granger causality
 
@@ -547,12 +520,10 @@ ITGaov_pval <- round(ITGaov_summary[[1]][2,5], digits = 5)
 
 ```
 
-
 ```{r}
 print(paste('Danny Boy: F(',DBaov_df,',',DBaov_dfres,') = ',DBaov_F,' with p = ',DBaov_pval))
 print(paste('In The Garden: F(',ITGaov_df,',',ITGaov_dfres,') = ',ITGaov_F,' with p = ',ITGaov_pval))
 ```
-
 
 ### Trend analysis of Cross-correlation
 
@@ -583,7 +554,6 @@ print(paste('Danny Boy: F(',DBaovcc_df,',',DBaovcc_dfres,') = ',DBaovcc_F,' with
 print(paste('In The Garden: F(',ITGaovcc_df,',',ITGaovcc_dfres,') = ',ITGaovcc_F,' with p = ',ITGaovcc_pval))
 ```
 
-
 #### Synchrony - CC (full function, not windowed) using 0 lag
 
 ```{r}
@@ -608,6 +578,62 @@ ITGaovcc0_pval <- round(ITGaovcc0_summary[[1]][2,5], digits = 5)
 print(paste('Danny Boy: F(',DBaovcc0_df,',',DBaovcc0_dfres,') = ',DBaovcc0_F,' with p = ',DBaovcc0_pval))
 print(paste('In The Garden: F(',ITGaovcc0_df,',',ITGaovcc0_dfres,') = ',ITGaovcc0_F,' with p = ',ITGaovcc0_pval))
 ```
+
+
+
+#### Trend analysis of best lags across trials
+
+```{r}
+aov.cc01 <- aov(CC0 ~ Trial, data = following1) # piece 1
+aov.cc02 <- aov(CC0 ~ Trial, data = following2) # piece 2
+
+DBaovcc0_summary <- summary(aov.cc01, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+ITGaovcc0_summary <- summary(aov.cc02, split = list(Trial = list(linear=1, quadratic=2, cubic=3, quartic=4)))
+
+DBaovcc0_df <- 1
+DBaovcc0_dfres <- aov.cc01$df.residual
+DBaovcc0_F <- round(DBaovcc0_summary[[1]][2,4], digits = 3)
+DBaovcc0_pval <- round(DBaovcc0_summary[[1]][2,5], digits = 5)
+
+ITGaovcc0_df <- 1
+ITGaovcc0_dfres <- aov.cc02$df.residual
+ITGaovcc0_F <- round(ITGaovcc0_summary[[1]][2,4], digits = 3)
+ITGaovcc0_pval <- round(ITGaovcc0_summary[[1]][2,5], digits = 5)
+```
+
+```{r}
+print(paste('Danny Boy: F(',DBaovcc0_df,',',DBaovcc0_dfres,') = ',DBaovcc0_F,' with p = ',DBaovcc0_pval))
+print(paste('In The Garden: F(',ITGaovcc0_df,',',ITGaovcc0_dfres,') = ',ITGaovcc0_F,' with p = ',ITGaovcc0_pval))
+```
+
+
+
+
+```{r}
+# ANOVAs between full (2) vs. reduced (1) models for best lags:
+anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
+anova.cc2.L <- anova(mod.cc2[[11]], mod.cc2[[12]]) # p-value
+print(anova.cc1.L)
+print(anova.cc2.L)
+
+# Define variables to report in results
+DBmcc_beta.L <- round(fixef(mod.cc1[[12]])[2], digits = 3)
+DBmcc_rsq.L <- round(r2beta(mod.cc1[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
+DBmcc_pval.L <- round(anova.cc1.L$`Pr(>Chisq)`[2], digits = 3)
+
+ITGmcc_beta.L <- round(fixef(mod.cc2[[12]])[2], digits = 3)
+ITGmcc_rsq.L <- round(r2beta(mod.cc2[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
+ITGmcc_pval.L <- round(anova.cc2.L$`Pr(>Chisq)`[2], digits = 3)
+```
+
+
+
+
+
+
+
+
+
 
 
 #### 0 LAG - last four trials
@@ -635,8 +661,6 @@ print(paste('Danny Boy: F(',DBaovcc0L_df,',',DBaovcc0L_dfres,') = ',DBaovcc0L_F,
 print(paste('In The Garden: F(',ITGaovcc0L_df,',',ITGaovcc0L_dfres,') = ',ITGaovcc0L_F,' with p = ',ITGaovcc0L_pval))
 ```
 
-
-
 ## Log-fit for CC
 
 #### Danny Boy
@@ -660,7 +684,6 @@ log.fit <- lm(y ~ log(x))
 summary(log.fit)
 
 ```
-
 
 ```{r, eval=FALSE}
 #trials <- as.integer(unique(following2$Trial))
@@ -689,7 +712,6 @@ cc.fit <- ggplot(following2, aes(Trial, CC)) +
 cc.fit
 ```
 
-
 ## Correlations between GC and CC
 
 ```{r corr, eval=FALSE, fig.height=8, fig.width=7}
@@ -714,6 +736,7 @@ plot(rhos2)
 ### Different method
 
 #### Danny Boy
+
 ```{r corr1, eval=FALSE, fig.height=8, fig.width=7}
 cor_mod1 <- lm(GC_r2p ~ CC, data=following1)
 summary(cor_mod1) # same as above
@@ -727,6 +750,7 @@ corr_plot1 <- ggplot(GC_r2p ~ CC, data=following1, type='p', xlab='CC', ylab='GC
 ```
 
 #### In The Garden
+
 ```{r corr2, eval=FALSE, fig.height=8, fig.width=7}
 with(following2,cor.test(x=GC_r2p, y=CC, method="pearson"))
 with(following2,cor.test(x=GC_r2p, y=CC, method="spearman", exact=F))
@@ -742,12 +766,9 @@ ggsave(paste(imageDirectory,"corr_plot1.png",sep=''),corr_plot1)
 ggsave(paste(imageDirectory,"corr_plot2.png",sep=''),corr_plot2)
 ```
 
-
-
 # Save data
 
-Save entire workspace image (all variables) as .Rdata file
-Save data frames as .rda files
+Save entire workspace image (all variables) as .Rdata file Save data frames as .rda files
 
 ```{r}
 ## SAVE DATA
@@ -758,5 +779,3 @@ save(plots, file = "following_plots.rda")
 #save(following, file=paste("following_",piece,"_",section,".rda",sep=''))
 #save(long_following, file = paste("long_following_",piece,"_",section,".rda",sep=''))
 ```
-
-
