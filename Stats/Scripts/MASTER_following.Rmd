@@ -579,8 +579,6 @@ print(paste('Danny Boy: F(',DBaovcc0_df,',',DBaovcc0_dfres,') = ',DBaovcc0_F,' w
 print(paste('In The Garden: F(',ITGaovcc0_df,',',ITGaovcc0_dfres,') = ',ITGaovcc0_F,' with p = ',ITGaovcc0_pval))
 ```
 
-
-
 #### Trend analysis of best lags across trials
 
 ```{r}
@@ -606,9 +604,6 @@ print(paste('Danny Boy: F(',DBaovcc0_df,',',DBaovcc0_dfres,') = ',DBaovcc0_F,' w
 print(paste('In The Garden: F(',ITGaovcc0_df,',',ITGaovcc0_dfres,') = ',ITGaovcc0_F,' with p = ',ITGaovcc0_pval))
 ```
 
-
-
-
 ```{r}
 # ANOVAs between full (2) vs. reduced (1) models for best lags:
 anova.cc1.L <- anova(mod.cc1[[11]], mod.cc1[[12]]) # p-value
@@ -625,16 +620,6 @@ ITGmcc_beta.L <- round(fixef(mod.cc2[[12]])[2], digits = 3)
 ITGmcc_rsq.L <- round(r2beta(mod.cc2[[12]], method = 'kr')[[7]][1], digits = 3) # or 'nsj'
 ITGmcc_pval.L <- round(anova.cc2.L$`Pr(>Chisq)`[2], digits = 3)
 ```
-
-
-
-
-
-
-
-
-
-
 
 #### 0 LAG - last four trials
 

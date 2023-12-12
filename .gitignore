@@ -1,11 +1,11 @@
 # Gitignore file for Violin following repo
 .gitignore
+*.DS_Store
 *
 
-!Amp_envs/
-!GC/
-!GC/cc_following.m
-GC/Other/
+!scripts/
+!scripts/cc_following.m
+
 
 !Stats/Scripts/Master_following.Rmd
 !Stats/Scripts/Master_following.html
