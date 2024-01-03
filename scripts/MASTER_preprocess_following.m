@@ -2,129 +2,158 @@
 
 %% Preprocess data for MVGC toolbox
 % Lucas Klein
-% Edited January 2022
+% Edited December 2023
 
 % This script reads in data from each participant stored as text files and
-% assigns that data to variables with the following convention: 
+% assigns that data to variables with the following convention:
 
+
+%% ~~~~~~~~~~ FIND DATA ~~~~~~~~~~
 clear variables
+cd('~/Desktop/Following/analysis/')
+save_flag = 1; % set this to 1 to save the Feat variable to .mat file
 
-% ~~~ CHANGE THESE ~~~
-which_piece = 2; % 1 for DB, 2 for ITG
-section = 'whole';
-
-if which_piece == 1
-    piece = 'Danny Boy';
-else
-    piece = 'In The Garden';
+% CHANGE THESE!
+which_piece = 1; % 1 for Danny Boy, 2 for In The Garden
+switch which_piece
+    case 1
+        piece = 'Danny Boy';
+    case 2
+        piece = 'In The Garden';
 end
 
-
-%% FIND DATA
-% Make sure these filenames match those of the experiment we're running
-
-addpath(genpath('~/Desktop/Following/ANALYSIS/'))
-data_folder = ['~/Desktop/Following/ANALYSIS/',piece,'/'];
-cd(data_folder)
-path_perf = [data_folder,'Txts_P',section];
-path_stim = [data_folder,'Txts_S',section];
-
+section = 'whole';
+datadir = ['../data/',piece,'/'];
+path_perf = [datadir,'Performance_',section];
+path_stim = [datadir,'Stim_out_',section];
 path_contents = dir(path_perf); % struct
-num_participants = size(path_contents,1) - 3; % This takes away the 3 nonsense entries
+
+participants = {}; %string(zeros(1,num_participants)); % empty list
+for p = 4:length(path_contents) % Because the 1st, 2nd and 3rd elements in data_folder.name are placeholders
+    participants = [participants; path_contents(p).name];
+end
+% 'participants' is now a cell array with all participants' names
 
 
-%% PARAMETERS
+%% ~~~~~~~~~~ SETUP ~~~~~~~~~~
+% Parameters
 sf = 44100;
-ds_targets = [8];
+ds_targets = [0,8,10]; % 0 ds_target --> no downsampling
+%M_lab = ['M_' + string(ds_target)];
 plotting_flag = 0;
 
-
-%% Make a list of participants
-participants = string(zeros(1,num_participants)); % empty list
-for p = 4:length(path_contents) % Because the 1st, 2nd and 3rd elements in data_folder.name are nonsense
-    par = path_contents(p).name;
-    participants(p-3) = par; % fill the participant list
-end
-% 'participants' is now an arrray of strings with all participants' names
-
-% We will save the data to a cell array with one cell for each participant
-D = cell(1,numel(participants));
-
-
-%% GET DATA
-% Loop through each participant's folder and find all .txt files
-% (trials)
-for p = 1:1 % numel(participants)
-    participant_folder_perf = append(path_perf,'/',participants(p));
-    participant_folder_stim = append(path_stim,'/',participants(p));
-    addpath(participant_folder_perf);
-    addpath(participant_folder_stim);
-    filenames = dir(fullfile(participant_folder_perf,'*.txt'));
-    filenames_stim = dir(fullfile(participant_folder_stim,'*.txt'));
-    
-    DATA = cell(1,numel(filenames)); % Preallocate a temporary cell array
-
-    for trial = 1:1 %numel(filenames)
-        filename = filenames(trial).name;
-        filename_stim = filenames_stim(trial).name; % CHANGED: trial=1
-        X = load(filename);
-        stim = load(filename_stim);
-        %X = X(:,1); % Which column to use? (1 or 2)
-        %stim = X(:,1); % Which column to use? (1 or 2)
-        
-        % Truncate both time series to the length of the shortest
-        trunc = min(length(X),length(stim));
-        X = X(1:trunc,1);
-        stim = stim(1:trunc,1);
-        
-        % Check the data
-        if plotting_flag == 1
-            plot(X)
-            hold on
-            plot(stim)
-        end
-        
-        %% For this trial, loop through all the downsampling rates we want to check
-        % For each one, downsample and z-score both the stimulus and
-        % performance using the prepare_following function
-        for ds_target = ds_targets
-            
-            % Downsample and z-score the data
-            stim_prep = prepare_following(stim, ds_target, sf, plotting_flag);
-            X_prep = prepare_following(X, ds_target, sf, plotting_flag);
-
-            combined = cat(3,X_prep,stim_prep);
-            
-            % Within consecutive cells in DATA (cell array), make a new struct
-            % for each trial and load data into a field within each
-            ds_label = ['ds_prep_' + string(ds_target)];
-            DATA{trial}.(ds_label) = combined; % Make new field for each trial
-            DATA{trial}.participant = participants(p);
-            %DATA{trial}.fields = fieldnames(DATA{trial});
-
-        end
-        
+% To save data
+Feat = struct();
+for i = 1:numel(participants)
+    Feat(i).piece = piece;
+    Feat(i).name = 'Participant_' + string(i);
+    Feat(i).ds_targets = ds_targets;
+    %Feat(i).raw_wavs = []; % takes lots of disk space
+    for dst = ds_targets
+        Feat(i).(['ds_', num2str(dst)]).morder = '';
+        Feat(i).(['ds_', num2str(dst)]).env.alltrials = ''; % for saving cell array of all trials separated
+        Feat(i).(['ds_', num2str(dst)]).specflux.alltrials = '';
+        Feat(i).(['ds_', num2str(dst)]).env.matrix = ''; % for saving GC-ready matrix of all trials
+        Feat(i).(['ds_', num2str(dst)]).specflux.matrix = '';
     end
-    % At this point, DATA has a cell for each trial, each of which contain
-    % one struct for each downsample target (and one for participant name)
-
-    %% SAVE THE DATA
-    % Save a NEW variable D that contains a cell for each participant, each of
-    % which contains one struct with fields for each downsample target.
-    % Each field is a (nvars x nobs x ntrials) matrix
-
-    %plotting_flag = 0; % Set to 1 if you want to plot all the matrices
-    
-    for ds_tar = ds_targets
-        M_label = ['M_' + string(ds_tar)];
-        D{p}.(M_label) = create_matrix_following(DATA, ds_tar, plotting_flag);
-        D{p}.participant = participants(p);
-    end 
-        
 end
 
 
+%% ~~~~~~~~~~ GET DATA ~~~~~~~~~~
+for p = 1:numel(participants) % Loop through each participant's folder
+    disp(['Computing: participant ' num2str(p) '/' num2str(numel(participants))]);
+
+    files_perf = [path_perf '/Part' num2str(p) '/']; % paths to audio files
+    files_stim = [path_stim '/Part' num2str(p) '/'];
+    
+    for ds_target = ds_targets
+
+        % Preallocate temporary cell arrays
+        DATA_env = cell(1,8); % for saving cell array of all trials separately as envelopes
+        DATA_specflux = cell(1,8); % for saving cell array of trials separately as spectral flux
+        DATA = cell(1,8); % for envs and specfluxs as matrices of all trials combined
+        for trial = 1:8 % loop over trials to find each successive audio file
+            filename_perf = [files_perf num2str(p) 'P_T' num2str(trial) '.wav'];
+            filename_stim = [files_stim num2str(p) 'S_T' num2str(trial) '.wav'];
+            
+            % Import
+            [perf, fs_perf] = audioread([filename_perf]);
+            [stim, fs_stim] = audioread([filename_stim]);
+            
+            % Check the data
+            if plotting_flag == 1
+                plot(perf)
+                hold off
+                plot(stim)
+            end
+            
+            %% COMPUTE AUDIO FEATURES
+            % Amplitude envelope
+            env_perf_prep = envelope(perf);
+            env_stim_prep = envelope(stim);
+            
+            % Spectral flux
+            specflux_perf_prep = spectralFlux(perf, fs_perf); % this uses ~440 windows
+            specflux_stim_prep = spectralFlux(stim, fs_stim); % because default is 100 Hz
+            % NOTE: do we need to add a zero? eg. [0; spectralFlux(perf, fs_perf)];
+% Resulting time series is 8076 data points
+% ~80s/8076 ~= 0.01 s ~= 100 data points per second --> 100 Hz
+            
+            fs = 100; % default sampling rate of specflux function
+            % this means the specflux time series is at 100 Hz
+            if ds_target ~= 0 % downsample both time series
+                env_perf_prep = resample(env_perf_prep, ds_target, fs_perf);
+                env_stim_prep = resample(env_stim_prep, ds_target, fs_stim);
+
+                specflux_perf_prep = resample(specflux_perf_prep, ds_target, fs);
+                specflux_stim_prep = resample(specflux_stim_prep, ds_target, fs);
+            end
+            
+            % Truncate both time series to the length of the shortest
+            [env_perf_prep, env_stim_prep] = prepare_following(env_perf_prep, env_stim_prep);
+            [specflux_perf_prep, specflux_stim_prep] = prepare_following(specflux_perf_prep, specflux_stim_prep);
+            % trunc = min(length(env_perf_prep),length(env_stim_prep));
+            % env_perf_prep = env_perf_prep(1:trunc,1);
+            % env_stim_prep = env_stim_prep(1:trunc,1);
+            % 
+            % trunc = min(length(env_perf_prep),length(env_stim_prep));
+            % env_perf_prep = env_perf_prep(1:trunc,1);
+            % env_stim_prep = env_stim_prep(1:trunc,1);
+
+            %% SAVE THE DATA
+            % Combine and save - For now try both ways
+            %DATA_env{trial} = cat(3,env_perf_prep,env_stim_prep); % for saving raw data
+            %DATA_specflux{trial} = cat(3,specflux_perf_prep,specflux_stim_prep);
+            DATA{trial}.env = cat(3,env_perf_prep,env_stim_prep); % for formatting data into GC matrix
+            DATA{trial}.specflux = cat(3,specflux_perf_prep,specflux_stim_prep);
+            %DATA{trial}.fields = fieldnames(DATA{trial});
+        end
+        
+        %Feat(p).(['ds_', num2str(ds_target)]).env.alltrials = DATA_env;
+        %Feat(p).(['ds_', num2str(ds_target)]).specflux.alltrials = DATA_specflux;
+        Feat(p).(['ds_', num2str(ds_target)]).env.matrix = create_matrix_following(DATA, 'env', plotting_flag);
+        Feat(p).(['ds_', num2str(ds_target)]).specflux.matrix = create_matrix_following(DATA, 'specflux', plotting_flag);
+    end
+end
+
+switch save_flag
+    case 1
+        save(['~/Desktop/Following/analysis/',piece,'/Feat_',piece,'_',section,'.mat'], 'Feat', '-v7.3')
+end
 % Now take this variable D over to the mvgc toolbox for GC!
 %save(['/Users/lucas/Desktop/Following/ANALYSIS/D',piece],'D')
 %save([data_folder,'D_',piece,'_',section],'D')
+
+
+% ~~~~~
+function specflux = zeropadSF(specflux_raw, desiredLen)
+  lenDiff = desiredLen - length(specflux_raw);
+  if lenDiff==0
+    specflux = speflux_raw;
+  elseif lenDiff>0;
+    specflux = [specflux_raw; repmat(0, lenDiff, 1)];
+  else
+    specflux = specflux_raw(end-lenDiff);
+  end
+end
 
