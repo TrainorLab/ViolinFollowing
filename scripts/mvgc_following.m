@@ -183,9 +183,9 @@ for participanti = 1:numel(Feat)
         %% Save all data
         % these are all matrices that include all trials, so save outside trial
         % loop
-        Feat(participanti).(['ds_', num2str(ds_target)]).pval = pval_data;
-        Feat(participanti).(['ds_', num2str(ds_target)]).cd = cd_data;
-        Feat(participanti).(['ds_', num2str(ds_target)]).gc = GC_data;
+        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).pval = pval_data;
+        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).cd = cd_data;
+        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).gc = GC_data;
             
     end
 end
@@ -208,9 +208,9 @@ if save_flag == 1
     save_mvgc_following
 end
 
-% % Make a table of raw gc scores for Violin --> Recording and Recording -->
-% % Violin
-% % For each participant, loop through all 
+% Make a table of raw gc scores for Violin --> Recording and Recording -->
+% Violin
+% For each participant, loop through all 
 % if save_flag == 1
 % 
 %     save([data_folder,'GCdata_',piece,'_',section],'Feat')
@@ -279,5 +279,5 @@ end
 % %     end
 %     writetable(T,xlsxname);
 % end
-% 
-% 
+
+

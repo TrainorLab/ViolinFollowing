@@ -71,8 +71,9 @@ end
 counter = 0;
 for participanti = 1:numel(D) % Loop through all participants
     for ds_target = ds_targets % Loop through downsampling targets
-        label = ['M_' + string(ds_target)]; % Find the field for this ds rate
-        X = D{participanti}.(label); % obtain matrix of observations
+        %label = ['M_' + string(ds_target)]; % Find the field for this ds rate
+        %label = (['ds_', num2str(ds_target)]).(feature).gc
+        X = Feat(participanti).(['ds_', num2str(ds_target)]).(feature).matrix; % obtain matrix of observations
         
         corvals = []; % create empty vector to store correlation coefficients
         counter = counter + 1; % increment the counter
@@ -161,9 +162,9 @@ for participanti = 1:numel(D) % Loop through all participants
             D{participanti}.(cc_label_lagneg) = neglag_index;
         end
     
-        D{participanti}.(cc_label) = cor_vals;
-        D{participanti}.(cc_label0) = cor_vals0;
-        D{participanti}.(cc_label_lag) = maxlag_index;
+        %D{participanti}.(cc_label) = cor_vals;
+        %D{participanti}.(cc_label0) = cor_vals0;
+        %D{participanti}.(cc_label_lag) = maxlag_index;
         
         % Dobri's method:
         %sr = 8;
