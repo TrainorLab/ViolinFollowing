@@ -38,7 +38,7 @@ end
 %% ~~~~~~~~~~ SETUP ~~~~~~~~~~
 % Parameters
 sf = 44100;
-ds_targets = [0,8,10]; % 0 ds_target --> no downsampling
+ds_targets = [0,6,8,10]; % 0 ds_target --> no downsampling
 %M_lab = ['M_' + string(ds_target)];
 plotting_flag = 0;
 
