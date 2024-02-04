@@ -1,18 +1,17 @@
 # Gitignore file for Violin following repo
-.gitignore
-*.DS_Store
-*
+.*
+*.mat
+*.xlsx
+images/
 
-!scripts/
+scripts/stats/
 
-!scripts/cc_following.m
+Danny Boy/
+In The Garden/
 
+2022_pub_versions/output/
+2022_pub_versions/images/
+2022_pub_versions/scripts/Archive/
+2022_pub_versions/scripts/stats/
+2022_pub_versions/scripts/analysis_following_2022.R/
 
-!Stats/Scripts/Master_following.Rmd
-!Stats/Scripts/Master_following.html
-!Stats/Scripts/prep_following.R
-!Stats/Scripts/plots_following.R
-!Stats/Scripts/lmer_following.R
-
-!README.md
-.Rproj.user
