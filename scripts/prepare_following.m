@@ -2,24 +2,13 @@ function [P_prep, S_prep] = prepare_following(P,S)
 %function data_z = prepare_following(X, ds_target, fs, plotting_flag)
 
 plotting_flag = 0;
+
 %% This function contains the preprocessing steps for the musical following study
 % Downsample a time series and convert it to z-scores
 % The input is a raw time series as a (nobs x 1) matrix
 % To plot the downsampling, set plotting_flag = 1. If not, set to 0.
-
+ 
 %% DOWNSAMPLE
-
-
-
-% size(X)
-% X_ds = resample(X, ds_target, fs);
-% 
-% size(X_ds)
-% 
-% 
-
-
-
 
 % 
 % timePoints = (1:length(X))'./fs; % # of seconds in data

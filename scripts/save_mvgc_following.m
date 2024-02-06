@@ -1,58 +1,78 @@
 %% Save data
 % Make a table of raw gc scores for Violin --> Recording and Recording -->
 % Violin
-% For each participant, loop through all 
 
-%ds_targets = Feat(parti).ds_targets;
-ds_targets = 8;
+% REQUIREMENTS: piece, piece_num (p)
 
-% Make two vectors of GC values: one for rec --> perf, one for perf --> rec
-GC_r2p = [];
-GC_p2r = [];
-for parti = 1:numel(Feat)
-    for ds_target = ds_targets % Loop through downsampling rates
-        save_label = ['ds_', num2str(ds_target),'.',feature,'.gc'];
-        % We need this to save data for all downsampling rates
-        for trial = 1:size(X,3)
-            %step_r2p = Feat(parti).(save_label)(1,2,trial);
-            %step_p2r = Feat(parti).(save_label)(2,1,trial);
-            step_r2p = Feat(parti).(['ds_', num2str(ds_target)]).(feature).gc(1,2,trial);
-            step_p2r = Feat(parti).(['ds_', num2str(ds_target)]).(feature).gc(2,1,trial);
-            GC_r2p = [GC_r2p; step_r2p];
-            GC_p2r = [GC_p2r; step_p2r];
+xlsx_filename = ['following_',piece,'_',section,'.xlsx'];
+MOs_filename = ['followingMOs_',piece,'_',section,'.xlsx'];
+ds_targets = Feats(1).ds_targets;
+
+T = zeros(numel(Feats)*ntrials, 8, length(ds_targets));
+MOs = zeros(numel(Feats), 4, length(ds_targets)); % length: 8 participants x ? ds_targets
+tables = cell(1,length(features));
+headers = {'Participant','Trial','GC_r2p','GC_p2r','CC','ds_target','Piece','Feature'};
+
+for ds_index = 1:length(ds_targets) % Loop through downsampling rates
+    ds_target = ds_targets(ds_index);
+
+    MOs(:,1,ds_index) = repelem(pc, numel(Feats));
+    MOs(:,2,ds_index) = [1:numel(Feats)]';
+
+    for f = 1:length(features)
+        feature = features{f};
+
+        % Make columns - each should be 8 x 8 = 64 long
+        T(:,1,ds_index) = repelem([1:numel(Feats)]', ntrials); % participants
+        T(:,2,ds_index) = repmat([1:ntrials]', numel(Feats), 1); % trials
+        T(:,6,ds_index) = repelem(ds_target, numel(Feats)*ntrials)'; % downsampling target (all the same)
+        T(:,7,ds_index) = repelem(pc, numel(Feats)*ntrials)'; % piece (all the same)
+        T(:,8,ds_index) = repelem(f, numel(Feats)*ntrials)'; % feature
+        
+        GC_r2p = [];
+        GC_p2r = [];
+        for parti = 1:numel(Feats)
+            %MOs(parti,2+f,ds_index) = Feats(parti).(['ds_', num2str(ds_target)]).(feature).morder;
+
+            for trial = 1:ntrials
+                %step_r2p = Feat(parti).(save_label)(1,2,trial);
+                %step_p2r = Feat(parti).(save_label)(2,1,trial);
+                step_r2p = Feats(parti).(['ds_', num2str(ds_target)]).(feature).GC_data(1,2,trial);
+                step_p2r = Feats(parti).(['ds_', num2str(ds_target)]).(feature).GC_data(2,1,trial);
+                GC_r2p = [GC_r2p; step_r2p];
+                GC_p2r = [GC_p2r; step_p2r];
+
+                
+                %% Calculate cross-correlation
+                %cc_following
+
+
+            end
         end
+        T(:,3,ds_index) = GC_r2p;
+        T(:,4,ds_index) = GC_p2r;
+        %T(:,5,ds_ind) = 'cc_vals';
+        tables{f} = T;
     end
+    S = [tables{1}; tables{2}]; % stack tables for each features on top of one another
+    % Table is now 128 long
+
+    %% Save each table to a different slice in an Excel spreadsheet
+    %slice = ; 
+    sliceCell = num2cell(S(:, :, s)); % this slice is now 256 long because it includes data for both features
+    cellData = [headers; sliceCell];
+    sheetName = sprintf('ds_%d', dst); % data for each ds_target on a different sheet
+    writecell(cellData, xlsx_filename, 'Sheet', sheetName); % Write slice to the specified sheet in the Excel file
 end
 
-% num of participants = numel(D)
-% num of trials = size(X,3)
 
-% Make vector for participant
-participant_col = repelem([1:numel(Feat)]',size(X,3)*length(ds_targets));
-
-% Make a vector for downsampling target
-%downsample = repmat(repelem(ds_targets,size(X,3))',numel(D),1);
-%downsample = repelem(8,64)';
-
-% Make vector for trial
-trial_col = repmat([1:ntrials]',numel(Feat)*length(ds_targets),1);
-
-% Make a vector for piece
-piece_num = repelem(which_piece, numel(Feat)*size(X,3))';
+%% Calculate CC values
 
 % Run cc_following.m to calculate CC values
 % cc_following_new
 % CC = corvals_reconfig;
 % CC0 = corvals_reconfig0;
 % CC_l = corvals_reconfig_lags;
-% CHANGES
-
-% Save an Excel sheet of the data
-%T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, CC_l, piece_num);
-%T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','CC_l','Piece'};
-
-T = table(participant_col, trial_col, GC_r2p, GC_p2r, piece_num);
-T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','Piece'};
 
 % case 1
 %     wcc_following_lags
@@ -62,15 +82,5 @@ T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','Piece'};
 %     CC3 = CCs{3};
 %     CC4 = CCs{4};
 
-% Save an Excel sheet of the data
-%T = table(participant, tri  all, GC_r2p, GC_p2r, CC0, CC1, CC2, CC3, CC4, piece_num); % all CC lags
-%T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC0','CC1','CC2','CC3','CC4','Piece'}; % without downsample column
-
-xlsxname = ['~/Desktop/Following/analysis/stats/nfollowing_',piece,'_',section,'_8.csv'];
-
-%     if method_flag == 'full' % defined in cc_following script
-%         xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'_full.csv'];
-%     end
-writetable(T,xlsxname);
-
+%writetable(T,xlsxname);
 

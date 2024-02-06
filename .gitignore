@@ -1,7 +1,11 @@
 # Gitignore file for Violin following repo
 .*
 *.mat
+*.asv
 *.xlsx
+*old.m
+*temp.m
+*test.m
 images/
 
 scripts/stats/
@@ -15,3 +19,4 @@ In The Garden/
 2022_pub_versions/scripts/stats/
 2022_pub_versions/scripts/analysis_following_2022.R/
 
+.Rproj.user

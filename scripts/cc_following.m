@@ -1,41 +1,7 @@
-%% Musical following study - Cross-correlation script
-% Lucas Klein
-% Updated: April 2022
-
-cd '~/Desktop/Following/ANALYSIS/GC';
-addpath(genpath('~/Desktop/Following/ANALYSIS/'));
-
-
-%% Carry in vars and load data
-% ~~~ CHANGE THESE ~~~
-% Carry in variables from preprocessing script, or change them?
-carry_over = 1; % 1 for yes (default), 0 for no
-save_flg = 0;
-
-if carry_over == 0 % if we don't carry over, say which piece we're analyzing here
-    piece = 'Danny Boy'; % Which piece are we analyzing?
-    section = 'whole'; % What section?
-    ds_targets = [8]; % [4, 5, 6, 7, 8, 9, 10, 12];
-    
-    % LOAD in matrix X
-    load(['D_',piece,'_',section,'.mat']); % This loads a cell array called 'D'.
-    % Each cell is a participant, each with a field for each downsampling
-    % rate. Those field contian matrices of size 2 (directions) x 646 (obs) x 8 (trials)
-end
 
 
 %% Set parameters
 %C = {}; % Empty array
-
-% Which method should we use? 
-switch 0 % CHANGE THIS
-    case 0
-        method_flag='full';
-    case 1
-        method_flag='wcc';
-    case 2
-        method_flag='gc_order';
-end
 
 sr = 8;
 sr100 = 100;

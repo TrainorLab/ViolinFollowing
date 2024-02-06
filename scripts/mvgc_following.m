@@ -1,51 +1,23 @@
 %% Musical following study - Granger Causality script
 % Lucas Klein - December 2023
 
-% This script runs the final step of the Granger causality analysis on the
-% violin following study data.
-% Importantly, the data should already have been preprocessed using the
+% This script runs the Granger causality analysis on the violin following
+% data. Importantly, the data should already have been preprocessed using the
 % MASTER_preprocess script
-% To plot everything, set plotting_flag = 1
-% To save the ouput to a .csv file, set save_flag = 1
 
-cd ~/Desktop/Following/analysis/
-addpath(genpath('~/Desktop/Following/analysis/scripts'));
-addpath(genpath('~/Documents/MATLAB/Toolboxes/mvgc_v1.0'));
+% REQUIREMENTS: piece, section, feature
+
+data_folder = ['~/Desktop/Following/analysis/',piece,'/'];
+load([data_folder,'Feats_',piece,'_',section,'.mat'], 'Feats');
 
 
 %% SETTINGS
-
 % Did you just run the MASTER_preprocess_following.m script?
-carry_over = 0; % 0 for no, 1 for yes
-plot_flag = 1;
-save_flag = 1; % Set to 1 if you want this loop to save a spreadsheet. If not, set to 0.
-% ALERT! This will overwrite existing files with the same save name!
-
-switch carry_over % Case 0 --> define variables:
-    case 0
-        disp("Loading variables from file...")
-        %clear variables
-        feature = 'specflux'; % 'env' or 'specflux'
-        which_piece = 1; % CHANGE THIS:
-        switch which_piece
-            case 1
-                piece = 'Danny Boy';
-            case 2
-                piece = 'In The Garden';
-        end
-        section = 'whole';
-        fprintf("Running script for: %s - section %s \n", piece, section)
-
-        % Find and load data
-        data_folder = ['~/Desktop/Following/analysis/',piece,'/'];
-        load([data_folder,'Feat_',piece,'_',section,'.mat'], 'Feat');
-
-    case 1
-        disp("Using current variables...")
-end
+plot_flag = 1; % Set to 1 to make plots of everything
+save_flag = 1; % Set to 1 to save Excel spreadsheet
 
 % Identify downsampling rates saved in variable
-ds_targets = Feat(1).ds_targets; % use first participant (but should all be the same)
+%ds_targets = Feats(1).ds_targets; % use first participant (but should all be the same)
 
 
 %% Parameters
@@ -62,24 +34,27 @@ fs        = 44100;  % sample rate (Hz)
 fres      = [];     % frequency resolution (empty for automatic calculation)
 seed      = 0;      % random seed (0 for unseeded)
 
+CCmaxlag = 50;
 
 %% Main GC loop 
-for participanti = 1:numel(Feat)
-    for ds_target = ds_targets % [8]
-        %label = ['M_' + feature + string(ds_target)];
-        %X = D{participanti}.(label);
-        X = Feat(participanti).(['ds_', num2str(ds_target)]).(feature).matrix;
+for participanti = 1:numel(Feats)
+    for ds_target = ds_targets
+        disp("Calculating GC for "+feature+ ...
+            ": participant "+num2str(participanti)+ ...
+            ", downsampled to "+num2str(ds_target)+" Hz")
+        X = Feats(participanti).(['ds_', num2str(ds_target)]).(feature).matrix;
         nvars     = size(X,1);      % number of variables (2)
         nobs      = size(X,2);      % number of observations per trial (many)
         ntrials   = size(X,3);      % number of trials (8)
         
+
         %% Model order estimation
         % Preallocate some vectors
-        AIC_matrix=zeros(momax,ntrials);
-        moAIC_matrix=zeros(1,ntrials);
+        AIC_matrix = zeros(momax,ntrials);
+        moAIC_matrix = zeros(1,ntrials);
         
         %% Model orders
-        for triali = 1:size(X,3) % Loop through all trials to find AIC matrix
+        for triali = 1:ntrials % Loop through all trials to find AIC matrix
             % Calculate information criteria up to specified maximum model
             % order
             [AIC,~,moAIC,~] = tsdata_to_infocrit(X(:,:,triali),momax,icregmode);
@@ -101,9 +76,6 @@ for participanti = 1:numel(Feat)
         end
         
         morder = max(moAIC_matrix); % max model order of all trials
-        Feat(participanti).(['ds_', num2str(ds_target)]).morder = morder; % save model orders
-        %label_morder = [label + '_morder'];
-        %D{participanti}.(label_morder) = morder;
         % Use this model order for every trial
         
         %% VAR model estimation (<mvgc_schema.html#3 |A2|>)
@@ -112,7 +84,8 @@ for participanti = 1:numel(Feat)
         pval_data = zeros(nvars,nvars,ntrials);
         sig_data = zeros(nvars,nvars,ntrials);
         cd_data = zeros(1,ntrials);
-        for triali = 1:size(X,3) % Loop through all trials
+        CC_vals = zeros(1,ntrials);
+        for triali = 1:ntrials % Loop through all trials
             
             % Estimate VAR model of selected order from data
             [A,SIG] = tsdata_to_var(X(:,:,triali),morder,regmode);
@@ -178,106 +151,37 @@ for participanti = 1:numel(Feat)
             % Save the cd data to a new field
             scd = mean(F(~isnan(F)));
             cd_data(1,triali) = scd;
+
+
+            %% CROSS-CORRELATION CALCULATION
+            % X(:,:,triali) - nvar x nobs
+            %% CROSS-CORRELATION CALCULATION
+            % X(:,:,triali) - nvar x nobs
+
+            %[CCvals_full, lags] = cc_following_full(X, CCmaxlag);
+
+
         end
         
         %% Save all data
-        % these are all matrices that include all trials, so save outside trial
-        % loop
-        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).pval = pval_data;
-        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).cd = cd_data;
-        Feat(participanti).(['ds_', num2str(ds_target)]).(feature).gc = GC_data;
-            
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).pval = pval_data;
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).cd_data = cd_data;
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).GC_data = GC_data;
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).morder = morder; % save model orders
+        disp(morder)
+        % New GC data is saved in the field that corresponds to each
+        % feature
     end
 end
-    
+
 
 %% Find model orders
 % model_orders = zeros(size(numel(Feat)));
-% for mos = 1:numel(Feat)
+% for mos = 1:numel(Feats)
 %     model_orders(mos) = D{mos}.M_8_morder;
 % end
 
 %mo_mean = mean(model_orders);
 %mo_stdev = std(model_orders);
-
-
-%% Save data
-save([data_folder,'GCdata_',piece,'_',section],'Feat', '-v7.3')
-
-if save_flag == 1
-    save_mvgc_following
-end
-
-% Make a table of raw gc scores for Violin --> Recording and Recording -->
-% Violin
-% For each participant, loop through all 
-% if save_flag == 1
-% 
-%     save([data_folder,'GCdata_',piece,'_',section],'Feat')
-% 
-%     % Make two vectors of GC values: one for rec --> perf, one for perf --> rec
-%     GC_r2p = [];
-%     GC_p2r = [];
-%     for parti = 1:numel(Feat)
-%         for ds_target = ds_targets % Loop through downsampling rates
-%             save_label = ['M_' + string(ds_target) + '_gc'];
-%             % We need this to save data for all downsampling rates
-%             for trial = 1:size(X,3)
-%                 step_r2p = Feat{parti}.(save_label)(1,2,trial);
-%                 step_p2r = Feat{parti}.(save_label)(2,1,trial);
-%                 GC_r2p = [GC_r2p; step_r2p];
-%                 GC_p2r = [GC_p2r; step_p2r];
-%             end
-%         end
-%     end
-%     % num of participants = numel(D)
-%     % num of trials = size(X,3)
-% 
-%     % Make vector for participant
-%     participant = repelem([1:numel(Feat)]',size(X,3)*length(ds_targets));
-% 
-%     % Make a vector for downsampling target
-%     %downsample = repmat(repelem(ds_targets,size(X,3))',numel(D),1);
-%     %downsample = repelem(8,64)';
-% 
-%     % Make vector for trial
-%     trial = repmat([1:ntrials]',numel(D)*length(ds_targets),1);
-% 
-%     % Make a vector for piece
-%     piece_num = repelem(which_piece, numel(D)*size(X,3))';
-% 
-%     % Run cc_following.m to calculate CC values
-%     switch 0
-%         case 0
-%             cc_following
-%             CC = corvals_reconfig;
-%             CC0 = corvals_reconfig0;
-%             CC_l = corvals_reconfig_lags;
-%             % CHANGES
-% 
-%             % Save an Excel sheet of the data
-%             T = table(participant, trial, GC_r2p, GC_p2r, CC, CC0, CC_l, piece_num);
-%             T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC','CC0','CC_l','Piece'};
-% 
-%         case 1
-%             wcc_following_lags
-%             CC0 = CCs{5};
-%             CC1 = CCs{1};
-%             CC2 = CCs{2};
-%             CC3 = CCs{3};
-%             CC4 = CCs{4};
-% 
-%             % Save an Excel sheet of the data
-%             T = table(participant, trial, GC_r2p, GC_p2r, CC0, CC1, CC2, CC3, CC4, piece_num); % all CC lags
-%             T.Properties.VariableNames = {'Participant','Trial','GC_r2p','GC_p2r','CC0','CC1','CC2','CC3','CC4','Piece'}; % without downsample column
-%     end
-% 
-%     xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'.csv'];
-% 
-% %     if method_flag == 'full' % defined in cc_following script
-% %         xlsxname = ['~/Desktop/Following/ANALYSIS/Stats/following_',piece,'_',section,'_full.csv'];
-% %     end
-%     writetable(T,xlsxname);
-% end
 
 
