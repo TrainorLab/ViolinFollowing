@@ -17,8 +17,8 @@ path_stim = [datadir,'Stim_out_',section];
 path_contents = dir(path_perf); % struct
 
 participants = {}; %string(zeros(1,num_participants)); % empty list
-for p = 4:length(path_contents) % Because the 1st, 2nd and 3rd elements in data_folder.name are placeholders
-    participants = [participants; path_contents(p).name];
+for par = 4:length(path_contents) % Because the 1st, 2nd and 3rd elements in data_folder.name are placeholders
+    participants = [participants; path_contents(par).name];
 end
 % 'participants' is now a cell array with all participants' names
 
@@ -41,6 +41,8 @@ for i = 1:numel(participants)
             Feats(i).(['ds_', num2str(dst)]).(feature).pval = '';
             Feats(i).(['ds_', num2str(dst)]).(feature).cd_data = '';
             Feats(i).(['ds_', num2str(dst)]).(feature).GC_data = '';
+            Feats(i).(['ds_', num2str(dst)]).(feature).CC_data_full = '';
+            Feats(i).(['ds_', num2str(dst)]).(feature).CC_data_wcc = '';
             Feats(i).(['ds_', num2str(dst)]).(feature).morder = '';
             %Feats(i).(['ds_', num2str(dst)]).env.alltrials = ''; % for saving cell array of all trials separated
         end

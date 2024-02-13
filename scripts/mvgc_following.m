@@ -5,10 +5,7 @@
 % data. Importantly, the data should already have been preprocessed using the
 % MASTER_preprocess script
 
-% REQUIREMENTS: piece, section, feature
-
-data_folder = ['~/Desktop/Following/analysis/',piece,'/'];
-load([data_folder,'Feats_',piece,'_',section,'.mat'], 'Feats');
+% REQUIREMENTS: Feats variable, piece, section, feature
 
 
 %% SETTINGS
@@ -33,8 +30,6 @@ mhtc      = 'FDR';  % multiple hypothesis test correction (see routine 'signific
 fs        = 44100;  % sample rate (Hz)
 fres      = [];     % frequency resolution (empty for automatic calculation)
 seed      = 0;      % random seed (0 for unseeded)
-
-CCmaxlag = 50;
 
 %% Main GC loop 
 for participanti = 1:numel(Feats)
@@ -84,7 +79,8 @@ for participanti = 1:numel(Feats)
         pval_data = zeros(nvars,nvars,ntrials);
         sig_data = zeros(nvars,nvars,ntrials);
         cd_data = zeros(1,ntrials);
-        CC_vals = zeros(1,ntrials);
+        maxCCvals_full = zeros(1,ntrials);
+        CCvals_win = cell(1,ntrials);
         for triali = 1:ntrials % Loop through all trials
             
             % Estimate VAR model of selected order from data
@@ -155,10 +151,16 @@ for participanti = 1:numel(Feats)
 
             %% CROSS-CORRELATION CALCULATION
             % X(:,:,triali) - nvar x nobs
-            %% CROSS-CORRELATION CALCULATION
-            % X(:,:,triali) - nvar x nobs
+            
+            % FULL CC: this function uses a custom maxlag: 1 beat (different for
+            % each piece)
+            [max_corval, corval0, lags, lags0] = cc_following_full(X, triali, ds_target, piece);
+            maxCCvals_full(1,triali) = max_corval;
 
-            %[CCvals_full, lags] = cc_following_full(X, CCmaxlag);
+            % WINDOWED CC
+            [wcc, wcc0, l, l0] = cc_following_win(X, triali, ds_target, piece);
+            CCvals_win{triali} = wcc;
+            
 
 
         end
@@ -167,8 +169,9 @@ for participanti = 1:numel(Feats)
         Feats(participanti).(['ds_', num2str(ds_target)]).(feature).pval = pval_data;
         Feats(participanti).(['ds_', num2str(ds_target)]).(feature).cd_data = cd_data;
         Feats(participanti).(['ds_', num2str(ds_target)]).(feature).GC_data = GC_data;
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).CC_data_full = maxCCvals_full;
+        Feats(participanti).(['ds_', num2str(ds_target)]).(feature).CC_data_wcc = CCvals_win;
         Feats(participanti).(['ds_', num2str(ds_target)]).(feature).morder = morder; % save model orders
-        disp(morder)
         % New GC data is saved in the field that corresponds to each
         % feature
     end
